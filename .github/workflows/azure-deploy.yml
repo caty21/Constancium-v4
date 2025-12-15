@@ -27,10 +27,15 @@ jobs:
       
       - name: Prepare deployment package
         run: |
-          mkdir deploy
+          # On copie tout ce qui est nécessaire pour le déploiement
+          mkdir -p deploy
           cp -r dist deploy/
           cp package*.json deploy/
           cp web.config deploy/ 2>/dev/null || true
+          
+          # Créer un package.json optimisé pour la production
+          cd deploy
+          npm ci --omit=dev
       
       - name: Deploy to Azure Web App
         id: deploy-to-webapp
