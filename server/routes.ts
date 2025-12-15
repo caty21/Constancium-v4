@@ -9,6 +9,16 @@ export async function registerRoutes(app: Express): Promise<Server> {
     const validUsername = process.env.SIMULATOR_USERNAME;
     const validPassword = process.env.SIMULATOR_PASSWORD;
     
+    // Log for debugging (only in development)
+    if (process.env.NODE_ENV !== 'production') {
+      console.log('Auth attempt - Username match:', username === validUsername, 'Password match:', password === validPassword);
+    }
+    
+    if (!validUsername || !validPassword) {
+      console.error('SIMULATOR_USERNAME or SIMULATOR_PASSWORD environment variables are not set');
+      return res.status(500).json({ success: false, error: "Configuration serveur manquante" });
+    }
+    
     if (username === validUsername && password === validPassword) {
       res.json({ success: true });
     } else {
