@@ -1,0 +1,227 @@
+import { useState, useEffect } from "react";
+import { Button } from "@/components/ui/button";
+import { Menu, X, TrendingUp, Building, Shield, Calculator, ChevronDown, ChevronRight } from "lucide-react";
+import { Link } from "wouter";
+import logoImage from "@assets/Capture_d_écran_2025-10-19_194027-removebg-preview_1764180904855.png";
+import { gammeCategories } from "@/constants/gamme";
+
+export default function ConstanciumHeader() {
+  const [isScrolled, setIsScrolled] = useState(false);
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
+
+  useEffect(() => {
+    const handleScroll = () => {
+      setIsScrolled(window.scrollY > 50);
+    };
+    window.addEventListener('scroll', handleScroll);
+    return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  const navItems = [
+    { label: "Philosophie", href: "/demarche" },
+    { label: "Gamme", href: "/gamme", hasSubmenu: true, submenuType: "gamme" },
+    { label: "Simulateurs", href: "/simulateur", hasSubmenu: true, submenuType: "simulateur" },
+    { label: "À Propos", href: "/about" },
+  ];
+
+  const simulatorSubmenu = [
+    { label: "Intérêts composés", href: "/simulateur#interets-composes", icon: TrendingUp, description: "Calculez la croissance de votre capital" },
+    { label: "Capacité d'emprunt", href: "/simulateur#credit-immobilier", icon: Building, description: "Estimez votre capacité d'emprunt immobilier" },
+    { label: "Effet levier", href: "/simulateur#effet-levier", icon: Calculator, description: "Simulez l'effet de levier immobilier" },
+  ];
+
+  return (
+    <header 
+      className={`fixed top-0 w-full z-50 transition-all duration-300 ${
+        isScrolled 
+          ? 'bg-[#0F1729] shadow-lg' 
+          : 'bg-[#0F1729]/95 backdrop-blur-sm'
+      }`}
+    >
+      <div className="max-w-7xl mx-auto px-6 md:px-8">
+        <div className="flex items-center justify-between h-20">
+          <Link href="/">
+            <div className="flex items-center gap-3 cursor-pointer group">
+              <img 
+                src={logoImage} 
+                alt="Constancium" 
+                className="h-10 w-10 object-contain"
+                data-testid="img-logo"
+              />
+              <span className="font-serif text-2xl font-bold text-white tracking-tight" data-testid="text-logo">
+                Constancium
+              </span>
+            </div>
+          </Link>
+
+          <nav className="hidden lg:flex items-center gap-1">
+            {navItems.map((item) => (
+              <div key={item.label} className="relative group">
+                <a
+                  href={item.href}
+                  className="relative px-4 py-2 text-sm font-medium text-white/90 hover:text-white transition-colors inline-flex items-center gap-1"
+                  data-testid={`link-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+                >
+                  {item.label}
+                  {item.hasSubmenu && <ChevronDown className="h-3 w-3 opacity-60" />}
+                  <span className="absolute bottom-0 left-0 w-0 h-0.5 bg-primary transition-all duration-300 group-hover:w-full" />
+                </a>
+
+                {/* Mega Menu for Gamme */}
+                {item.submenuType === "gamme" && (
+                  <div 
+                    className="absolute top-full left-1/2 -translate-x-1/2 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200"
+                    onMouseLeave={() => setHoveredCategory(null)}
+                  >
+                    <div className="bg-[#0F1729] border border-[#D4AF37]/30 rounded-lg shadow-2xl min-w-[500px] overflow-hidden">
+                      <div className="flex">
+                        {/* Categories Column */}
+                        <div className="w-1/2 border-r border-[#D4AF37]/20 py-2">
+                          <div className="px-4 py-2 border-b border-[#D4AF37]/10">
+                            <span className="text-xs font-medium text-[#D4AF37] uppercase tracking-wider">Catégories</span>
+                          </div>
+                          {gammeCategories.map((category, idx) => {
+                            const CategoryIcon = category.icon;
+                            return (
+                              <a
+                                key={category.id}
+                                href={`/gamme?category=${category.id}`}
+                                className={`flex items-center gap-3 px-4 py-3 transition-colors ${
+                                  hoveredCategory === idx ? 'bg-[#D4AF37]/10' : 'hover:bg-white/5'
+                                }`}
+                                onMouseEnter={() => setHoveredCategory(idx)}
+                                data-testid={`link-gamme-${category.id}`}
+                              >
+                                <div className={`p-1.5 rounded-md transition-colors ${
+                                  hoveredCategory === idx ? 'bg-[#D4AF37]/20' : 'bg-[#D4AF37]/10'
+                                }`}>
+                                  <CategoryIcon className="h-4 w-4 text-[#D4AF37]" />
+                                </div>
+                                <div className="flex-1">
+                                  <span className={`block text-sm font-medium transition-colors ${
+                                    hoveredCategory === idx ? 'text-[#D4AF37]' : 'text-white'
+                                  }`}>
+                                    {category.title}
+                                  </span>
+                                </div>
+                                <ChevronRight className={`h-4 w-4 transition-colors ${
+                                  hoveredCategory === idx ? 'text-[#D4AF37]' : 'text-white/30'
+                                }`} />
+                              </a>
+                            );
+                          })}
+                        </div>
+
+                        {/* Subcategories Column */}
+                        <div className="w-1/2 py-2 bg-[#0a0f1a]">
+                          <div className="px-4 py-2 border-b border-[#D4AF37]/10">
+                            <span className="text-xs font-medium text-[#D4AF37]/70 uppercase tracking-wider">
+                              {hoveredCategory !== null ? gammeCategories[hoveredCategory].title : 'Sous-catégories'}
+                            </span>
+                          </div>
+                          {hoveredCategory !== null ? (
+                            gammeCategories[hoveredCategory].subcategories.map((sub) => (
+                              <a
+                                key={sub.id}
+                                href={`/gamme?category=${gammeCategories[hoveredCategory].id}&sub=${sub.id}`}
+                                className="block px-4 py-2.5 text-sm text-white/80 hover:text-[#D4AF37] hover:bg-white/5 transition-colors"
+                                data-testid={`link-sub-${sub.id}`}
+                              >
+                                {sub.name}
+                              </a>
+                            ))
+                          ) : (
+                            <div className="px-4 py-4 text-sm text-white/40">
+                              Survolez une catégorie
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                )}
+
+                {/* Simple Menu for Simulateur */}
+                {item.submenuType === "simulateur" && (
+                  <div className="absolute top-full left-0 pt-2 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200">
+                    <div className="bg-[#0F1729] border border-[#D4AF37]/30 rounded-lg shadow-2xl py-2 min-w-[280px]">
+                      <div className="px-4 pb-2 mb-2 border-b border-[#D4AF37]/10">
+                        <span className="text-xs font-medium text-[#D4AF37] uppercase tracking-wider">Simulateurs</span>
+                      </div>
+                      {simulatorSubmenu.map((subItem) => {
+                        const SubIcon = subItem.icon;
+                        return (
+                          <a
+                            key={subItem.label}
+                            href={subItem.href}
+                            className="flex items-start gap-3 px-4 py-2.5 hover:bg-white/5 transition-colors group/item"
+                            data-testid={`link-sub-${subItem.label.toLowerCase().replace(/\s+/g, '-')}`}
+                          >
+                            <div className="p-1.5 bg-[#D4AF37]/10 rounded-md group-hover/item:bg-[#D4AF37]/20 transition-colors">
+                              <SubIcon className="h-4 w-4 text-[#D4AF37]" />
+                            </div>
+                            <div>
+                              <span className="block text-sm font-medium text-white group-hover/item:text-[#D4AF37] transition-colors">
+                                {subItem.label}
+                              </span>
+                              <span className="text-xs text-white/50">{subItem.description}</span>
+                            </div>
+                          </a>
+                        );
+                      })}
+                    </div>
+                  </div>
+                )}
+              </div>
+            ))}
+          </nav>
+
+          <div className="flex items-center gap-3">
+            <a href="/contact">
+              <Button 
+                className="hidden md:flex bg-primary/10 backdrop-blur-sm border border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
+                data-testid="button-schedule"
+              >
+                Des questions ?
+              </Button>
+            </a>
+            
+            <Button
+              size="icon"
+              variant="ghost"
+              className="lg:hidden text-white"
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              data-testid="button-mobile-menu"
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </Button>
+          </div>
+        </div>
+
+        {mobileMenuOpen && (
+          <nav className="lg:hidden py-4 space-y-2 border-t border-white/10">
+            {navItems.map((item) => (
+              <a
+                key={item.label}
+                href={item.href}
+                className="block px-4 py-3 text-white/90 hover:text-white hover:bg-white/5 rounded-md transition-colors"
+                onClick={() => setMobileMenuOpen(false)}
+                data-testid={`link-mobile-${item.label.toLowerCase().replace(/\s+/g, '-')}`}
+              >
+                {item.label}
+              </a>
+            ))}
+            <div className="px-4 pt-2">
+              <a href="/contact" className="block">
+                <Button className="w-full bg-primary text-primary-foreground" data-testid="button-mobile-schedule">
+                  Des questions ?
+                </Button>
+              </a>
+            </div>
+          </nav>
+        )}
+      </div>
+    </header>
+  );
+}
