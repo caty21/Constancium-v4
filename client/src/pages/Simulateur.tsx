@@ -2,21 +2,27 @@ import { useState, useEffect } from "react";
 import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
 import CompoundInterestCalculator from "@/components/CompoundInterestCalculator";
-import MortgageCalculator from "@/components/MortgageCalculator";
 import LeverageCalculator from "@/components/LeverageCalculator";
 import SimulatorAuthModal from "@/components/SimulatorAuthModal";
 import { Button } from "@/components/ui/button";
-import { Calculator, Home, TrendingUp, ArrowDown, Scale } from "lucide-react";
+import { Calculator, TrendingUp, ArrowDown, Scale, Lock } from "lucide-react";
 
 export default function Simulateur() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isLeverageAuthenticated, setIsLeverageAuthenticated] = useState(false);
+  const [showAuthModal, setShowAuthModal] = useState(false);
 
   useEffect(() => {
-    const authStatus = sessionStorage.getItem("simulator-authenticated");
+    const authStatus = sessionStorage.getItem("leverage-authenticated");
     if (authStatus === "true") {
-      setIsAuthenticated(true);
+      setIsLeverageAuthenticated(true);
     }
   }, []);
+
+  const handleLeverageAuthenticated = () => {
+    sessionStorage.setItem("leverage-authenticated", "true");
+    setIsLeverageAuthenticated(true);
+    setShowAuthModal(false);
+  };
 
   const scrollToSection = (id: string) => {
     const element = document.getElementById(id);
@@ -24,15 +30,6 @@ export default function Simulateur() {
       element.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   };
-
-  if (!isAuthenticated) {
-    return (
-      <>
-        <ConstanciumHeader />
-        <SimulatorAuthModal onAuthenticated={() => setIsAuthenticated(true)} />
-      </>
-    );
-  }
 
   return (
     <div className="min-h-screen">
@@ -68,16 +65,6 @@ export default function Simulateur() {
               <Button
                 variant="outline"
                 className="border-primary/30 text-foreground hover:bg-primary hover:text-primary-foreground gap-2"
-                onClick={() => scrollToSection('credit-immobilier')}
-                data-testid="button-nav-mortgage"
-              >
-                <Home className="h-4 w-4" />
-                Capacité d'emprunt
-                <ArrowDown className="h-3 w-3" />
-              </Button>
-              <Button
-                variant="outline"
-                className="border-primary/30 text-foreground hover:bg-primary hover:text-primary-foreground gap-2"
                 onClick={() => scrollToSection('effet-levier')}
                 data-testid="button-nav-leverage"
               >
@@ -103,78 +90,13 @@ export default function Simulateur() {
                 variant="ghost"
                 size="sm"
                 className="text-muted-foreground hover:text-foreground gap-1"
-                onClick={() => scrollToSection('credit-immobilier')}
+                onClick={() => scrollToSection('effet-levier')}
               >
-                Capacité d'emprunt
+                Effet levier
                 <ArrowDown className="h-3 w-3" />
               </Button>
             </div>
             <CompoundInterestCalculator />
-          </div>
-
-          {/* Separator */}
-          <div className="border-t border-primary/20 my-12" />
-
-          {/* Mortgage Calculator Section */}
-          <div id="credit-immobilier" className="mb-16 pt-8 scroll-mt-24">
-            <div className="flex items-center justify-between gap-3 mb-8 flex-wrap">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-md">
-                  <Home className="h-6 w-6 text-primary" />
-                </div>
-                <h2 className="font-serif text-3xl font-bold text-foreground" data-testid="text-mortgage-title">
-                  Simulateur de capacité d'emprunt immobilier
-                </h2>
-              </div>
-              <div className="flex gap-2 flex-wrap">
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-foreground gap-1"
-                  onClick={() => scrollToSection('interets-composes')}
-                >
-                  Intérêts composés
-                  <ArrowDown className="h-3 w-3 rotate-180" />
-                </Button>
-                <Button
-                  variant="ghost"
-                  size="sm"
-                  className="text-muted-foreground hover:text-foreground gap-1"
-                  onClick={() => scrollToSection('effet-levier')}
-                >
-                  Effet levier
-                  <ArrowDown className="h-3 w-3" />
-                </Button>
-              </div>
-            </div>
-            <MortgageCalculator />
-          </div>
-
-          {/* Separator */}
-          <div className="border-t border-primary/20 my-12" />
-
-          {/* Leverage Calculator Section */}
-          <div id="effet-levier" className="mb-16 pt-8 scroll-mt-24">
-            <div className="flex items-center justify-between gap-3 mb-8 flex-wrap">
-              <div className="flex items-center gap-3">
-                <div className="p-2 bg-primary/10 rounded-md">
-                  <Scale className="h-6 w-6 text-primary" />
-                </div>
-                <h2 className="font-serif text-3xl font-bold text-foreground" data-testid="text-leverage-title">
-                  Simulateur d'effet levier immobilier
-                </h2>
-              </div>
-              <Button
-                variant="ghost"
-                size="sm"
-                className="text-muted-foreground hover:text-foreground gap-1"
-                onClick={() => scrollToSection('credit-immobilier')}
-              >
-                Capacité d'emprunt
-                <ArrowDown className="h-3 w-3 rotate-180" />
-              </Button>
-            </div>
-            <LeverageCalculator />
           </div>
 
           {/* Educational Content */}
@@ -216,6 +138,64 @@ export default function Simulateur() {
               </p>
             </div>
           </div>
+
+          {/* Separator */}
+          <div className="border-t border-primary/20 my-12" />
+
+          {/* Leverage Calculator Section */}
+          <div id="effet-levier" className="mb-16 pt-8 scroll-mt-24">
+            <div className="flex items-center justify-between gap-3 mb-8 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-md">
+                  <Scale className="h-6 w-6 text-primary" />
+                </div>
+                <h2 className="font-serif text-3xl font-bold text-foreground" data-testid="text-leverage-title">
+                  Simulateur d'effet levier du crédit
+                </h2>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground gap-1"
+                onClick={() => scrollToSection('interets-composes')}
+              >
+                Intérêts composés
+                <ArrowDown className="h-3 w-3 rotate-180" />
+              </Button>
+            </div>
+            {isLeverageAuthenticated ? (
+              <LeverageCalculator />
+            ) : (
+              <div className="bg-muted/30 p-12 rounded-lg border border-primary/20 text-center">
+                <div className="w-16 h-16 mx-auto mb-6 bg-primary/10 rounded-full flex items-center justify-center">
+                  <Lock className="w-8 h-8 text-primary" />
+                </div>
+                <h3 className="font-serif text-2xl font-bold text-foreground mb-4">
+                  Accès réservé
+                </h3>
+                <p className="text-foreground/70 mb-6 max-w-md mx-auto">
+                  Ce simulateur est réservé à nos clients en consultation. 
+                  Veuillez vous authentifier pour y accéder.
+                </p>
+                <Button
+                  onClick={() => setShowAuthModal(true)}
+                  className="bg-primary text-primary-foreground"
+                  data-testid="button-unlock-leverage"
+                >
+                  <Lock className="w-4 h-4 mr-2" />
+                  Débloquer l'accès
+                </Button>
+              </div>
+            )}
+          </div>
+
+          {/* Auth Modal for Leverage Calculator */}
+          {showAuthModal && (
+            <SimulatorAuthModal 
+              onAuthenticated={handleLeverageAuthenticated}
+              onClose={() => setShowAuthModal(false)}
+            />
+          )}
 
           {/* CTA Section */}
           <div className="mt-16 text-center bg-primary/5 p-8 rounded-lg border border-primary/20">

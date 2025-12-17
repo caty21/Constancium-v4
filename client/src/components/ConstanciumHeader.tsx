@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
-import { Menu, X, TrendingUp, Building, Shield, Calculator, ChevronDown, ChevronRight } from "lucide-react";
+import { Menu, X, TrendingUp, Shield, Calculator, ChevronDown, ChevronRight } from "lucide-react";
 import { Link } from "wouter";
 import logoImage from "@assets/Capture_d_écran_2025-10-19_194027-removebg-preview_1764180904855.png";
 import { gammeCategories } from "@/constants/gamme";
@@ -27,8 +27,7 @@ export default function ConstanciumHeader() {
 
   const simulatorSubmenu = [
     { label: "Intérêts composés", href: "/simulateur#interets-composes", icon: TrendingUp, description: "Calculez la croissance de votre capital" },
-    { label: "Capacité d'emprunt", href: "/simulateur#credit-immobilier", icon: Building, description: "Estimez votre capacité d'emprunt immobilier" },
-    { label: "Effet levier", href: "/simulateur#effet-levier", icon: Calculator, description: "Simulez l'effet de levier immobilier" },
+    { label: "Effet levier", href: "/simulateur#effet-levier", icon: Calculator, description: "Simulez l'effet de levier du crédit" },
   ];
 
   return (

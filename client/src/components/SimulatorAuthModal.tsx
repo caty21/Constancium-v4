@@ -7,9 +7,10 @@ import { Lock, User, Calculator, AlertCircle, X, Eye, EyeOff } from "lucide-reac
 
 interface SimulatorAuthModalProps {
   onAuthenticated: () => void;
+  onClose?: () => void;
 }
 
-export default function SimulatorAuthModal({ onAuthenticated }: SimulatorAuthModalProps) {
+export default function SimulatorAuthModal({ onAuthenticated, onClose }: SimulatorAuthModalProps) {
   const [, setLocation] = useLocation();
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
@@ -18,8 +19,12 @@ export default function SimulatorAuthModal({ onAuthenticated }: SimulatorAuthMod
   const [isLoading, setIsLoading] = useState(false);
 
   const handleClose = () => {
-    setLocation("/");
-    window.scrollTo(0, 0);
+    if (onClose) {
+      onClose();
+    } else {
+      setLocation("/");
+      window.scrollTo(0, 0);
+    }
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
