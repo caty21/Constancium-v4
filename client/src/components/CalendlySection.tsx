@@ -44,12 +44,6 @@ export default function CalendlySection() {
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </a>
-              <a href="/contact">
-                <Button className="bg-primary text-primary-foreground hover:bg-primary/90" data-testid="button-nous-contacter-calendly">
-                  Nous contacter
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </a>
             </div>
           </div>
 

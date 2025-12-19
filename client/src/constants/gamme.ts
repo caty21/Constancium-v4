@@ -108,8 +108,7 @@ export const gammeCategories = [
         description: "",
         items: [],
         definitions: [
-          { name: "Girardin industriel", acronym: "Réduction d'impôt Outre-mer", description: "Réduction d'impôt one-shot en contrepartie d'investissements productifs en Outre-mer.", icon: "compass" },
-          { name: "Groupements forestiers", acronym: "Investissement forestier", description: "Investissement dans la forêt française avec avantages fiscaux sur l'IFI et les successions.", icon: "target" }
+          { name: "Girardin industriel", acronym: "Réduction d'impôt Outre-mer", description: "Réduction d'impôt one-shot en contrepartie d'investissements productifs en Outre-mer.", icon: "compass" }
         ]
       }
     ]

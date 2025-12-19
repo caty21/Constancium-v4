@@ -47,16 +47,6 @@ export default function ConstanciumHero() {
               <ArrowRight className="ml-2 h-5 w-5" />
             </Button>
           </a>
-          <a href="/contact">
-            <Button 
-              size="lg"
-              variant="outline"
-              className="bg-white/10 backdrop-blur-sm border-white/30 text-white hover:bg-white/20"
-              data-testid="button-book-appointment"
-            >
-              Des questions ?
-            </Button>
-          </a>
         </div>
 
       </div>

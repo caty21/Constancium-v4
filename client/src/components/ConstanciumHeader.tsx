@@ -177,15 +177,6 @@ export default function ConstanciumHeader() {
           </nav>
 
           <div className="flex items-center gap-3">
-            <a href="/contact">
-              <Button 
-                className="hidden md:flex bg-primary/10 backdrop-blur-sm border border-primary/30 text-primary hover:bg-primary hover:text-primary-foreground"
-                data-testid="button-schedule"
-              >
-                Des questions ?
-              </Button>
-            </a>
-            
             <Button
               size="icon"
               variant="ghost"
@@ -211,13 +202,6 @@ export default function ConstanciumHeader() {
                 {item.label}
               </a>
             ))}
-            <div className="px-4 pt-2">
-              <a href="/contact" className="block">
-                <Button className="w-full bg-primary text-primary-foreground" data-testid="button-mobile-schedule">
-                  Des questions ?
-                </Button>
-              </a>
-            </div>
           </nav>
         )}
       </div>

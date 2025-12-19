@@ -197,23 +197,6 @@ export default function Simulateur() {
             />
           )}
 
-          {/* CTA Section */}
-          <div className="mt-16 text-center bg-primary/5 p-8 rounded-lg border border-primary/20">
-            <h3 className="font-serif text-2xl font-bold mb-4 text-foreground">
-              Prêt à passer à l'action ?
-            </h3>
-            <p className="text-foreground/80 mb-6 max-w-2xl mx-auto">
-              Cette simulation vous donne une première vision de ce que peuvent devenir vos investissements. 
-              Pour une stratégie personnalisée adaptée à votre situation, prenez rendez-vous avec Capucine.
-            </p>
-            <a 
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-primary text-primary-foreground px-6 py-3 rounded-md font-medium hover:bg-primary/90 transition-colors"
-              data-testid="button-schedule-consultation"
-            >
-              Nous contacter
-            </a>
-          </div>
         </div>
       </section>
 

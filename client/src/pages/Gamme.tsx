@@ -99,17 +99,6 @@ export default function Gamme() {
                   })}
                 </nav>
 
-                {/* CTA */}
-                <div className="mt-8 p-4 bg-[#D4AF37]/5 rounded-lg border border-[#D4AF37]/20">
-                  <p className="text-sm text-foreground/80 mb-3">
-                    Besoin d'un conseil personnalisé ?
-                  </p>
-                  <a href="/contact">
-                    <Button size="sm" className="w-full" data-testid="sidebar-cta">
-                      Nous contacter
-                    </Button>
-                  </a>
-                </div>
               </div>
             </aside>
 

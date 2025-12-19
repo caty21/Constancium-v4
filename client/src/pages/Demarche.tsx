@@ -100,20 +100,6 @@ export default function Demarche() {
             ))}
           </div>
 
-          <div className="text-center bg-[#0F1729] rounded-lg p-8 md:p-12">
-            <h2 className="font-serif text-2xl md:text-3xl font-bold text-white mb-4">
-              Prêt à débuter votre parcours patrimonial ?
-            </h2>
-            <p className="text-white/70 mb-6 max-w-lg mx-auto">
-              Prenez rendez-vous pour un premier échange sans engagement et découvrez comment nous pouvons vous accompagner.
-            </p>
-            <a href="/contact">
-              <Button size="lg" data-testid="button-demarche-contact">
-                Nous contacter
-                <ArrowRight className="ml-2 h-4 w-4" />
-              </Button>
-            </a>
-          </div>
         </div>
       </section>
 
