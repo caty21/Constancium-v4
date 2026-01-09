@@ -19,7 +19,7 @@ export default function LitteratureJuridique() {
                 <strong>Constancium</strong> - Dénomination commerciale de <strong>Constancium Patrimoine & Capital</strong> - E.I - SIREN 993095611 - capucine@constancium.com - www.constancium.com
               </p>
               <p className="leading-relaxed mt-4">
-                Enregistré à l’ORIAS sous le n°26000030 (www.orias.fr) en qualité de : - Intermédiaire en assurance en qualité de courtier adhérent de l'ANACOFI – association agréée par l’Autorité des Marchés Financiers. Ne peut directement recevoir aucun fonds, effet, ou valeur.
+                Enregistré à l’ORIAS sous le n°26000030 (<a href="https://www.orias.fr" target="_blank" rel="noopener noreferrer" className="text-[#D4AF37] hover:underline">www.orias.fr</a>) en qualité de : - Intermédiaire en assurance en qualité de courtier adhérent de l'ANACOFI – association agréée par l’Autorité des Marchés Financiers. Ne peut directement recevoir aucun fonds, effet, ou valeur.
               </p>
               <p className="leading-relaxed mt-4">
                 Constancium est l'abréviation commerciale de la société Constancium Patrimoine & Capital et constitue une dénomination unique pour une même entité juridique. Les deux dénominations font référence à la même personne morale, sans distinction juridique ou administrative.
