@@ -82,14 +82,9 @@ export default function ConstanciumFooter() {
 
         <div className="border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
-            <div className="flex flex-col items-center md:items-start gap-1">
-              <p className="text-sm text-white/50" data-testid="text-copyright">
-                © 2025 Constancium. Tous droits réservés.
-              </p>
-              <p className="text-xs text-[#D4AF37]/50 font-medium">
-                Matricule ORIAS : 26000030
-              </p>
-            </div>
+            <p className="text-sm text-white/50" data-testid="text-copyright">
+              © 2025 Constancium. Tous droits réservés.
+            </p>
             <div className="flex gap-6 text-sm text-white/50">
               <a href="/litterature-juridique" className="hover:text-white transition-colors" data-testid="link-privacy">Littérature Juridique</a>
               <a href="/cgv" className="hover:text-white transition-colors" data-testid="link-terms">Conditions</a>
