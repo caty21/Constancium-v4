@@ -3,7 +3,6 @@ import ConstanciumHero from "@/components/ConstanciumHero";
 import ServiceModule from "@/components/ServiceModule";
 import CalendlySection from "@/components/CalendlySection";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
-import ComingSoonModal from "@/components/ComingSoonModal";
 import { Button } from "@/components/ui/button";
 import { Link } from "wouter";
 import { Briefcase, TrendingUp, PiggyBank, FileText, ArrowRight } from "lucide-react";
@@ -34,7 +33,6 @@ export default function Home() {
 
   return (
     <div className="min-h-screen">
-      <ComingSoonModal />
       <ConstanciumHeader />
       
       <ConstanciumHero />
