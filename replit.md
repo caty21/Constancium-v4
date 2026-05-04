@@ -41,27 +41,24 @@ The application follows a sophisticated design inspired by Goldman Sachs and Bla
 - Legal pages: CGV, Cookies, Littérature Juridique
 
 ### Storage Pattern
-- In-memory storage class for user data (development)
-- Database schema defined in `shared/schema.ts` using Drizzle
+- No database storage used — app is fully stateless
+- `shared/schema.ts` and `server/storage.ts` are empty stubs (database removed by design)
 
 ## External Dependencies
 
 ### Third-Party Services
-- **Email**: Resend API for contact form submissions
+- **Email**: Resend API for contact form submissions (server/routes.ts, optional)
 - **Calendar**: Zcal integration for scheduling consultations
-- **Database**: Neon PostgreSQL (serverless)
 - **WhatsApp**: Direct link widget for customer contact
-- **Social Media**: LinkedIn profile link only (Instagram removed)
+- **Social Media**: LinkedIn profile link only
 
 ### Key NPM Packages
-- `@neondatabase/serverless`: PostgreSQL database connectivity
-- `drizzle-orm` / `drizzle-kit`: Database ORM and migrations
 - `@tanstack/react-query`: Data fetching and caching
-- `@radix-ui/*`: Accessible UI primitives
+- `@radix-ui/*`: Accessible UI primitives (including Slider for simulator)
 - `wouter`: Client-side routing
 - `zod`: Schema validation
 - Google Fonts: Playfair Display, Inter, Cormorant Garamond
 
 ### Environment Variables Required
-- `DATABASE_URL`: PostgreSQL connection string
+- `SIMULATOR_USERNAME` / `SIMULATOR_PASSWORD`: Credentials for the leverage simulator
 - `RESEND_API_KEY`: Email service API key (optional, for contact form)

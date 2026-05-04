@@ -87,9 +87,11 @@ export default function Demarche() {
                     <step.icon className="h-6 w-6 text-[#D4AF37]" />
                   </div>
                   <div>
-                    <div className="flex items-center gap-2 mb-2">
-                      <span className="text-[#D4AF37] font-bold text-sm">{index + 1}</span>
-                      <h3 className="font-serif text-lg font-bold text-foreground">{step.title}</h3>
+                    <div className="flex items-center gap-3 mb-2">
+                      <div className="w-6 h-6 rounded-full bg-[#D4AF37] flex items-center justify-center flex-shrink-0">
+                        <span className="text-[#0F1729] font-bold text-xs leading-none">{index + 1}</span>
+                      </div>
+                      <h3 className="font-serif text-lg font-bold text-foreground leading-tight">{step.title}</h3>
                     </div>
                     <p className="text-foreground/70 text-sm leading-relaxed">
                       {step.description}

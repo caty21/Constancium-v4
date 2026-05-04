@@ -1,7 +1,9 @@
-import { useState, useMemo } from "react";
+import { useState, useMemo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Calculator, TrendingUp, PiggyBank, Percent, Clock, Info } from "lucide-react";
+import { Slider } from "@/components/ui/slider";
+import { Calculator, TrendingUp, PiggyBank, Percent, Clock, Info, Download, Calendar, RefreshCw } from "lucide-react";
+import { Button } from "@/components/ui/button";
 
 interface YearlyData {
   year: number;
@@ -12,30 +14,38 @@ interface YearlyData {
 
 export default function CompoundInterestCalculator() {
   const [initialCapital, setInitialCapital] = useState(10000);
-  const [annualDeposit, setAnnualDeposit] = useState(0);
+  const [monthlyVP, setMonthlyVP] = useState(0);
+  const [vpRecurrencesPerYear, setVpRecurrencesPerYear] = useState(12);
   const [years, setYears] = useState(20);
   const [interestRate, setInterestRate] = useState(7);
+  const [interestFrequencyMonths, setInterestFrequencyMonths] = useState(12);
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+  const resultsRef = useRef<HTMLDivElement>(null);
 
   const results = useMemo(() => {
-    const rate = interestRate / 100;
+    const annualRate = interestRate / 100;
+    const n = 12 / interestFrequencyMonths;
+    const r_n = annualRate / n;
+    const annualVP = monthlyVP * vpRecurrencesPerYear;
+    const depositPerPeriod = annualVP / n;
+
     const yearlyData: YearlyData[] = [];
-    
+
     for (let year = 1; year <= years; year++) {
-      const totalDeposits = initialCapital + annualDeposit * year;
-      
+      const periods = n * year;
+      const totalDeposits = initialCapital + annualVP * year;
+
       let balance: number;
-      if (rate === 0) {
-        // No interest: just sum up deposits
+      if (annualRate === 0) {
         balance = totalDeposits;
-      } else if (annualDeposit === 0) {
-        balance = initialCapital * Math.pow(1 + rate, year);
+      } else if (depositPerPeriod === 0) {
+        balance = initialCapital * Math.pow(1 + r_n, periods);
       } else {
-        const principalGrowth = initialCapital * Math.pow(1 + rate, year);
-        const annuityGrowth = annualDeposit * ((Math.pow(1 + rate, year) - 1) / rate);
+        const principalGrowth = initialCapital * Math.pow(1 + r_n, periods);
+        const annuityGrowth = depositPerPeriod * ((Math.pow(1 + r_n, periods) - 1) / r_n);
         balance = principalGrowth + annuityGrowth;
       }
-      
+
       yearlyData.push({
         year,
         deposits: totalDeposits,
@@ -43,16 +53,16 @@ export default function CompoundInterestCalculator() {
         total: balance
       });
     }
-    
+
     const finalData = yearlyData[yearlyData.length - 1];
-    
+
     return {
       finalCapital: finalData?.total || initialCapital,
       totalDeposits: finalData?.deposits || initialCapital,
       totalInterest: finalData?.interest || 0,
       yearlyData
     };
-  }, [initialCapital, annualDeposit, years, interestRate]);
+  }, [initialCapital, monthlyVP, vpRecurrencesPerYear, years, interestRate, interestFrequencyMonths]);
 
   const formatCurrency = (value: number) => {
     return new Intl.NumberFormat('fr-FR', {
@@ -62,8 +72,8 @@ export default function CompoundInterestCalculator() {
     }).format(Math.round(value));
   };
 
-  const maxChartValue = results.yearlyData.length > 0 
-    ? results.yearlyData[results.yearlyData.length - 1].total 
+  const maxChartValue = results.yearlyData.length > 0
+    ? results.yearlyData[results.yearlyData.length - 1].total
     : 0;
 
   const getXAxisLabels = () => {
@@ -94,8 +104,178 @@ export default function CompoundInterestCalculator() {
 
   const multiplier = results.totalDeposits > 0 ? results.finalCapital / results.totalDeposits : 1;
 
+  const frequencyLabel = (months: number) => {
+    if (months === 1) return "mensuelle";
+    if (months === 3) return "trimestrielle";
+    if (months === 6) return "semestrielle";
+    if (months === 12) return "annuelle";
+    return `tous les ${months} mois`;
+  };
+
+  const handleDownload = () => {
+    const canvas = document.createElement("canvas");
+    const dpr = 2;
+    const W = 700;
+    const H = 520;
+    canvas.width = W * dpr;
+    canvas.height = H * dpr;
+    canvas.style.width = `${W}px`;
+    canvas.style.height = `${H}px`;
+    const ctx = canvas.getContext("2d")!;
+    ctx.scale(dpr, dpr);
+
+    const gold = "#D4AF37";
+    const navy = "#0F1729";
+    const navy2 = "#1e3a5f";
+    const green = "#16a34a";
+    const white = "#ffffff";
+    const muted = "rgba(255,255,255,0.6)";
+
+    ctx.fillStyle = navy;
+    ctx.fillRect(0, 0, W, H);
+
+    ctx.fillStyle = "rgba(255,255,255,0.03)";
+    ctx.fillRect(0, 0, W, 90);
+
+    ctx.fillStyle = gold;
+    ctx.font = "bold 22px Georgia, serif";
+    ctx.fillText("Simulation — Intérêts Composés", 28, 38);
+
+    ctx.fillStyle = muted;
+    ctx.font = "13px Inter, sans-serif";
+    const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    ctx.fillText(`Constancium  ·  ${date}`, 28, 60);
+
+    ctx.strokeStyle = gold;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(28, 80);
+    ctx.lineTo(W - 28, 80);
+    ctx.stroke();
+
+    ctx.fillStyle = white;
+    ctx.font = "bold 13px Inter, sans-serif";
+    ctx.fillText("PARAMÈTRES", 28, 108);
+
+    const params = [
+      ["Capital initial", formatCurrency(initialCapital)],
+      ["VP mensuelle", formatCurrency(monthlyVP)],
+      ["Récurrences VP / an", `${vpRecurrencesPerYear}x`],
+      ["Durée", `${years} ans`],
+      ["Taux annuel", `${interestRate} %`],
+      ["Capitalisation", frequencyLabel(interestFrequencyMonths)],
+    ];
+
+    ctx.font = "13px Inter, sans-serif";
+    const colW = (W - 56) / 3;
+    params.forEach(([label, val], i) => {
+      const col = i % 3;
+      const row = Math.floor(i / 3);
+      const x = 28 + col * colW;
+      const y = 132 + row * 44;
+
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      roundRect(ctx, x, y - 18, colW - 8, 36, 6);
+      ctx.fill();
+
+      ctx.fillStyle = muted;
+      ctx.font = "11px Inter, sans-serif";
+      ctx.fillText(label, x + 10, y - 2);
+      ctx.fillStyle = white;
+      ctx.font = "bold 13px Inter, sans-serif";
+      ctx.fillText(val, x + 10, y + 14);
+    });
+
+    ctx.fillStyle = white;
+    ctx.font = "bold 13px Inter, sans-serif";
+    ctx.fillText("RÉSULTATS", 28, 240);
+
+    ctx.strokeStyle = gold;
+    ctx.lineWidth = 1;
+    ctx.beginPath();
+    ctx.moveTo(28, 250);
+    ctx.lineTo(W - 28, 250);
+    ctx.stroke();
+
+    ctx.fillStyle = "rgba(212,175,55,0.12)";
+    roundRect(ctx, 28, 264, W - 56, 100, 10);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(212,175,55,0.4)";
+    ctx.lineWidth = 1;
+    roundRect(ctx, 28, 264, W - 56, 100, 10);
+    ctx.stroke();
+
+    ctx.fillStyle = muted;
+    ctx.font = "13px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText("Capital final estimé", W / 2, 289);
+    ctx.fillStyle = gold;
+    ctx.font = "bold 36px Georgia, serif";
+    ctx.fillText(formatCurrency(results.finalCapital), W / 2, 328);
+    if (multiplier > 1) {
+      ctx.fillStyle = "rgba(212,175,55,0.8)";
+      ctx.font = "13px Inter, sans-serif";
+      ctx.fillText(`× ${multiplier.toFixed(1)} votre mise`, W / 2, 350);
+    }
+
+    ctx.textAlign = "left";
+    const cardW = (W - 56 - 16) / 2;
+
+    ctx.fillStyle = "rgba(255,255,255,0.05)";
+    roundRect(ctx, 28, 384, cardW, 64, 8);
+    ctx.fill();
+    ctx.fillStyle = muted;
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillText("Total versé", 38, 404);
+    ctx.fillStyle = white;
+    ctx.font = "bold 15px Georgia, serif";
+    ctx.fillText(formatCurrency(results.totalDeposits), 38, 428);
+
+    ctx.fillStyle = "rgba(22,163,74,0.12)";
+    roundRect(ctx, 28 + cardW + 16, 384, cardW, 64, 8);
+    ctx.fill();
+    ctx.strokeStyle = "rgba(22,163,74,0.3)";
+    ctx.lineWidth = 1;
+    roundRect(ctx, 28 + cardW + 16, 384, cardW, 64, 8);
+    ctx.stroke();
+    ctx.fillStyle = muted;
+    ctx.font = "11px Inter, sans-serif";
+    ctx.fillText("Intérêts générés", 28 + cardW + 26, 404);
+    ctx.fillStyle = green;
+    ctx.font = "bold 15px Georgia, serif";
+    ctx.fillText(`+${formatCurrency(results.totalInterest)}`, 28 + cardW + 26, 428);
+
+    ctx.fillStyle = muted;
+    ctx.font = "11px Inter, sans-serif";
+    ctx.textAlign = "center";
+    ctx.fillText(
+      "Simulation indicative. Capitalisation " + frequencyLabel(interestFrequencyMonths) + ". Les performances passées ne préjugent pas des performances futures.",
+      W / 2,
+      498
+    );
+
+    const link = document.createElement("a");
+    link.download = `simulation-interets-composes-constancium.png`;
+    link.href = canvas.toDataURL("image/png");
+    link.click();
+  };
+
+  function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
+    ctx.beginPath();
+    ctx.moveTo(x + r, y);
+    ctx.lineTo(x + w - r, y);
+    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
+    ctx.lineTo(x + w, y + h - r);
+    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
+    ctx.lineTo(x + r, y + h);
+    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
+    ctx.lineTo(x, y + r);
+    ctx.quadraticCurveTo(x, y, x + r, y);
+    ctx.closePath();
+  }
+
   return (
-    <div className="w-full">
+    <div className="w-full" ref={resultsRef}>
       <div className="grid lg:grid-cols-2 gap-6">
         {/* Inputs Section */}
         <div className="p-5 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200">
@@ -125,21 +305,47 @@ export default function CompoundInterestCalculator() {
               </div>
             </div>
 
-            {/* Annual Deposit */}
+            {/* Monthly VP */}
             <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
               <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
                 <TrendingUp className="h-4 w-4 text-[#1e3a5f]" />
-                Versement annuel
+                VP mensuelle
               </Label>
               <div className="flex items-center gap-1">
                 <Input
                   type="number"
-                  value={annualDeposit}
-                  onChange={(e) => setAnnualDeposit(Math.max(0, Number(e.target.value)))}
+                  value={monthlyVP}
+                  onChange={(e) => setMonthlyVP(Math.max(0, Number(e.target.value)))}
                   className="w-28 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-annual-deposit"
+                  data-testid="input-monthly-vp"
                 />
                 <span className="text-gray-500 text-sm">€</span>
+              </div>
+            </div>
+
+            {/* VP Recurrences per year */}
+            <div className="p-3 bg-white rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
+                  <RefreshCw className="h-4 w-4 text-[#1e3a5f]" />
+                  Récurrences VP / an
+                </Label>
+                <span className="text-[#1e3a5f] font-bold text-sm bg-[#1e3a5f]/10 px-2 py-0.5 rounded">
+                  {vpRecurrencesPerYear}x
+                </span>
+              </div>
+              <Slider
+                min={1}
+                max={12}
+                step={1}
+                value={[vpRecurrencesPerYear]}
+                onValueChange={(val) => setVpRecurrencesPerYear(val[0])}
+                className="w-full"
+                data-testid="slider-vp-recurrences"
+              />
+              <div className="flex justify-between mt-1">
+                <span className="text-xs text-gray-400">1× (annuel)</span>
+                <span className="text-xs text-gray-400">12× (mensuel)</span>
               </div>
             </div>
 
@@ -179,16 +385,54 @@ export default function CompoundInterestCalculator() {
                 <span className="text-gray-500 text-sm">%</span>
               </div>
             </div>
+
+            {/* Interest Frequency Slider */}
+            <div className="p-3 bg-white rounded-lg border border-gray-200">
+              <div className="flex items-center justify-between gap-3 mb-2">
+                <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
+                  <Calendar className="h-4 w-4 text-[#1e3a5f]" />
+                  Versement des intérêts
+                </Label>
+                <span className="text-[#1e3a5f] font-bold text-sm bg-[#1e3a5f]/10 px-2 py-0.5 rounded capitalize">
+                  {frequencyLabel(interestFrequencyMonths)}
+                </span>
+              </div>
+              <Slider
+                min={1}
+                max={12}
+                step={1}
+                value={[interestFrequencyMonths]}
+                onValueChange={(val) => setInterestFrequencyMonths(val[0])}
+                className="w-full"
+                data-testid="slider-interest-frequency"
+              />
+              <div className="flex justify-between mt-1">
+                <span className="text-xs text-gray-400">1 mois</span>
+                <span className="text-xs text-gray-400">12 mois</span>
+              </div>
+            </div>
           </div>
         </div>
 
         {/* Results Section */}
         <div className="p-5 rounded-lg bg-white border border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-[#1e3a5f] rounded-md">
-              <TrendingUp className="h-5 w-5 text-white" />
+          <div className="flex items-center justify-between gap-2 mb-4">
+            <div className="flex items-center gap-2">
+              <div className="p-2 bg-[#1e3a5f] rounded-md">
+                <TrendingUp className="h-5 w-5 text-white" />
+              </div>
+              <h3 className="font-serif text-xl font-bold text-[#1e3a5f]">Résultats</h3>
             </div>
-            <h3 className="font-serif text-xl font-bold text-[#1e3a5f]">Résultats</h3>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={handleDownload}
+              className="flex items-center gap-1.5 border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/5 text-xs h-8"
+              data-testid="button-download-result"
+            >
+              <Download className="h-3.5 w-3.5" />
+              Télécharger
+            </Button>
           </div>
 
           {/* Main Result */}
@@ -199,7 +443,7 @@ export default function CompoundInterestCalculator() {
             </p>
             {multiplier > 1 && (
               <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-[#D4AF37]/20 rounded-full">
-                <span className="text-xs font-medium text-[#1e3a5f]">x{multiplier.toFixed(1)} votre mise</span>
+                <span className="text-xs font-medium text-[#1e3a5f]">×{multiplier.toFixed(1)} votre mise</span>
               </div>
             )}
           </div>
@@ -229,10 +473,10 @@ export default function CompoundInterestCalculator() {
                 const depositRatio = data.total > 0 ? data.deposits / data.total : 1;
                 const interestRatio = data.total > 0 ? data.interest / data.total : 0;
                 const isHovered = hoveredBar === index;
-                
+
                 return (
-                  <div 
-                    key={index} 
+                  <div
+                    key={index}
                     className="flex-1 flex flex-col justify-end relative cursor-pointer"
                     style={{ height: '100%' }}
                     onMouseEnter={() => setHoveredBar(index)}
@@ -254,15 +498,15 @@ export default function CompoundInterestCalculator() {
                         </div>
                       </div>
                     )}
-                    <div 
+                    <div
                       className={`w-full flex flex-col transition-all duration-150 ${isHovered ? 'opacity-100 scale-105' : 'opacity-90'}`}
                       style={{ height: `${totalHeight}%`, minHeight: totalHeight > 0 ? '2px' : '0' }}
                     >
-                      <div 
+                      <div
                         className="w-full bg-green-500 rounded-t-sm"
                         style={{ flex: interestRatio }}
                       />
-                      <div 
+                      <div
                         className="w-full bg-[#1e3a5f]"
                         style={{ flex: depositRatio }}
                       />
@@ -273,7 +517,7 @@ export default function CompoundInterestCalculator() {
             </div>
             <div className="relative h-5 mt-1">
               {getXAxisLabels().map((label, idx) => (
-                <span 
+                <span
                   key={idx}
                   className="absolute text-xs text-gray-500 -translate-x-1/2"
                   style={{ left: `${label.position}%` }}
@@ -309,7 +553,7 @@ export default function CompoundInterestCalculator() {
       {/* Disclaimer */}
       <div className="mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200">
         <p className="text-xs text-gray-500 text-center" data-testid="text-disclaimer">
-          Simulation indicative basée sur une capitalisation annuelle. Les performances passées ne préjugent pas des performances futures.
+          Simulation indicative basée sur une capitalisation {frequencyLabel(interestFrequencyMonths)}. Les performances passées ne préjugent pas des performances futures.
         </p>
       </div>
     </div>
