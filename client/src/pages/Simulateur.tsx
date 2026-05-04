@@ -3,9 +3,10 @@ import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
 import CompoundInterestCalculator from "@/components/CompoundInterestCalculator";
 import LeverageCalculator from "@/components/LeverageCalculator";
+import PERCalculator from "@/components/PERCalculator";
 import SimulatorAuthModal from "@/components/SimulatorAuthModal";
 import { Button } from "@/components/ui/button";
-import { Calculator, TrendingUp, ArrowDown, Scale, Lock } from "lucide-react";
+import { Calculator, TrendingUp, ArrowDown, Scale, Lock, ShieldCheck } from "lucide-react";
 
 export default function Simulateur() {
   const [isLeverageAuthenticated, setIsLeverageAuthenticated] = useState(false);
@@ -70,6 +71,16 @@ export default function Simulateur() {
               >
                 <Scale className="h-4 w-4" />
                 Effet levier
+                <ArrowDown className="h-3 w-3" />
+              </Button>
+              <Button
+                variant="outline"
+                className="border-primary/30 text-foreground hover:bg-primary hover:text-primary-foreground gap-2"
+                onClick={() => scrollToSection('simulateur-per')}
+                data-testid="button-nav-per"
+              >
+                <ShieldCheck className="h-4 w-4" />
+                Simulateur PER
                 <ArrowDown className="h-3 w-3" />
               </Button>
             </div>
@@ -196,6 +207,36 @@ export default function Simulateur() {
               onClose={() => setShowAuthModal(false)}
             />
           )}
+
+          {/* Separator */}
+          <div className="border-t border-primary/20 my-12" />
+
+          {/* PER Calculator Section */}
+          <div id="simulateur-per" className="mb-16 pt-8 scroll-mt-24">
+            <div className="flex items-center justify-between gap-3 mb-8 flex-wrap">
+              <div className="flex items-center gap-3">
+                <div className="p-2 bg-primary/10 rounded-md">
+                  <ShieldCheck className="h-6 w-6 text-primary" />
+                </div>
+                <div>
+                  <h2 className="font-serif text-3xl font-bold text-foreground" data-testid="text-per-title">
+                    Simulateur PER — Économie fiscale
+                  </h2>
+                  <p className="text-sm text-foreground/60 mt-0.5">Plan d'Épargne Retraite individuel · déduction à l'entrée</p>
+                </div>
+              </div>
+              <Button
+                variant="ghost"
+                size="sm"
+                className="text-muted-foreground hover:text-foreground gap-1"
+                onClick={() => scrollToSection('interets-composes')}
+              >
+                Haut de page
+                <ArrowDown className="h-3 w-3 rotate-180" />
+              </Button>
+            </div>
+            <PERCalculator />
+          </div>
 
         </div>
       </section>

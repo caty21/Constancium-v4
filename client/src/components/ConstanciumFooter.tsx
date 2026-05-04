@@ -83,7 +83,7 @@ export default function ConstanciumFooter() {
         <div className="border-t border-white/10 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center gap-4">
             <p className="text-sm text-white/50" data-testid="text-copyright">
-              © 2025 Constancium. Tous droits réservés.
+              © 2026 Constancium. Tous droits réservés.
             </p>
             <div className="flex gap-6 text-sm text-white/50">
               <a href="/litterature-juridique" className="hover:text-white transition-colors" data-testid="link-privacy">Littérature Juridique</a>
