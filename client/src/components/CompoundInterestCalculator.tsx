@@ -575,17 +575,22 @@ export default function CompoundInterestCalculator() {
       </div>
 
       {/* Amortization Table */}
-      <div className="mt-6 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
-        <div className="flex items-center justify-between px-5 py-3 bg-[#1e3a5f]">
-          <div className="flex items-center gap-2">
-            <TableIcon className="h-4 w-4 text-[#D4AF37]" />
-            <h4 className="font-serif font-semibold text-white text-sm">Tableau d'amortissement — année par année</h4>
+      <div className="mt-6 rounded-xl border border-[#D4AF37]/30 overflow-hidden shadow-sm bg-white">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-[#D4AF37]/20 bg-gradient-to-r from-white to-[#D4AF37]/5">
+          <div className="flex items-center gap-3">
+            <div className="p-1.5 bg-[#D4AF37]/15 rounded-lg">
+              <TableIcon className="h-4 w-4 text-[#D4AF37]" />
+            </div>
+            <div>
+              <h4 className="font-serif font-semibold text-[#1e3a5f] text-sm">Tableau d'amortissement</h4>
+              <p className="text-[10px] text-gray-400">Progression du capital année par année</p>
+            </div>
           </div>
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-3">
             <Button
               size="sm"
               onClick={handleExportCSV}
-              className="flex items-center gap-1.5 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs h-7 px-3"
+              className="flex items-center gap-1.5 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs h-7 px-3 shadow-sm"
               data-testid="button-export-csv"
             >
               <Download className="h-3 w-3" />
@@ -593,11 +598,11 @@ export default function CompoundInterestCalculator() {
             </Button>
             <button
               onClick={() => setShowTable((v) => !v)}
-              className="flex items-center gap-1 text-white/70 hover:text-white text-xs transition-colors"
+              className="flex items-center gap-1.5 text-[#1e3a5f]/60 hover:text-[#1e3a5f] text-xs font-medium transition-colors border border-gray-200 rounded-lg px-2.5 py-1.5 hover:border-[#1e3a5f]/30 bg-white"
               data-testid="button-toggle-table"
             >
-              {showTable ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
-              {showTable ? "Masquer" : "Afficher"}
+              {showTable ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
+              {showTable ? "Réduire" : "Afficher"}
             </button>
           </div>
         </div>
