@@ -13,6 +13,7 @@ import Demarche from "@/pages/Demarche";
 import LitteratureJuridique from "@/pages/LitteratureJuridique";
 import Cookies from "@/pages/Cookies";
 import CGV from "@/pages/CGV";
+import Admin from "@/pages/Admin";
 import NotFound from "@/pages/not-found";
 
 function Router() {
@@ -27,6 +28,7 @@ function Router() {
       <Route path="/litterature-juridique" component={LitteratureJuridique} />
       <Route path="/cookies" component={Cookies} />
       <Route path="/cgv" component={CGV} />
+      <Route path="/admin" component={Admin} />
       <Route component={NotFound} />
     </Switch>
   );
