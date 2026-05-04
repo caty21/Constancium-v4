@@ -1,316 +1,247 @@
-import { useState } from "react";
+import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Wallet, Euro, Clock, Percent, TrendingUp, PiggyBank, Calendar } from "lucide-react";
+import { Building2, Euro, Clock, Percent, TrendingUp, Calendar, Info, ArrowRight } from "lucide-react";
 
 export default function LeverageCalculator() {
-  const [creditAmount, setCreditAmount] = useState(200000);
+  const [loanAmount, setLoanAmount] = useState(200000);
   const [monthlyRent, setMonthlyRent] = useState(800);
-  const [monthlyPayment, setMonthlyPayment] = useState(1100);
   const [loanDuration, setLoanDuration] = useState(20);
   const [resaleYear, setResaleYear] = useState(15);
   const [appreciationRate, setAppreciationRate] = useState(1);
   const [interestRate, setInterestRate] = useState(3.5);
 
-  const monthlySavingsEffort = monthlyPayment - monthlyRent;
-  const cumulativeSavingsEffort = monthlySavingsEffort * resaleYear * 12;
-  const averageMonthlySavingsEffort = monthlySavingsEffort;
+  const results = useMemo(() => {
+    const annualRate = interestRate / 100;
+    const totalMonths = loanDuration * 12;
+    const resaleMonths = Math.min(resaleYear, loanDuration) * 12;
 
-  const propertyValueAtResale = creditAmount * Math.pow(1 + appreciationRate / 100, resaleYear);
+    // Actuarial monthly rate: (1 + annual)^(1/12) - 1
+    const r = Math.pow(1 + annualRate, 1 / 12) - 1;
 
-  const monthlyRate = interestRate / 100 / 12;
-  const paymentsAtResale = resaleYear * 12;
-  
-  // Calculate remaining balance using user-provided monthly payment
-  let remainingLoanBalance: number;
-  if (monthlyRate === 0) {
-    // Zero interest: simple linear paydown
-    remainingLoanBalance = creditAmount - (monthlyPayment * paymentsAtResale);
-  } else {
-    // Standard amortization formula using user's monthly payment:
-    // Balance(n) = P*(1+r)^n - M*((1+r)^n - 1)/r
-    const compoundFactor = Math.pow(1 + monthlyRate, paymentsAtResale);
-    remainingLoanBalance = creditAmount * compoundFactor 
-      - monthlyPayment * (compoundFactor - 1) / monthlyRate;
-  }
-  remainingLoanBalance = Math.max(0, remainingLoanBalance);
+    // Monthly payment via actuarial formula
+    let monthlyPayment: number;
+    if (r === 0) {
+      monthlyPayment = loanAmount / totalMonths;
+    } else {
+      monthlyPayment = (loanAmount * r) / (1 - Math.pow(1 + r, -totalMonths));
+    }
 
-  const netGain = propertyValueAtResale - remainingLoanBalance - cumulativeSavingsEffort;
+    // Capital restant dû after resaleMonths using actuarial formula
+    // CRD(N) = P*(1+r)^N - M*((1+r)^N - 1)/r
+    let remainingBalance: number;
+    if (r === 0) {
+      remainingBalance = Math.max(0, loanAmount - monthlyPayment * resaleMonths);
+    } else {
+      const factor = Math.pow(1 + r, resaleMonths);
+      remainingBalance = loanAmount * factor - monthlyPayment * (factor - 1) / r;
+    }
+    remainingBalance = Math.max(0, remainingBalance);
 
-  const calculateIRR = () => {
+    // Property value at resale
+    const propertyValue = loanAmount * Math.pow(1 + appreciationRate / 100, resaleYear);
+
+    // Effort d'épargne = mensualité - loyer
+    const monthlySavingsEffort = monthlyPayment - monthlyRent;
+    const cumulativeSavingsEffort = monthlySavingsEffort * resaleMonths;
+
+    // Total interest paid over loan
+    const totalInterestPaid = monthlyPayment * totalMonths - loanAmount;
+
+    // Net gain at resale
+    const netGain = propertyValue - remainingBalance - cumulativeSavingsEffort;
+
+    // IRR calculation
     const cashFlows: number[] = [];
-    
-    for (let month = 0; month < paymentsAtResale; month++) {
+    for (let m = 0; m < resaleMonths; m++) {
       cashFlows.push(-monthlySavingsEffort);
     }
-    
-    const finalCashFlow = propertyValueAtResale - remainingLoanBalance;
-    cashFlows[cashFlows.length - 1] += finalCashFlow;
+    cashFlows[cashFlows.length - 1] += propertyValue - remainingBalance;
 
     let irr = 0.05;
-    const maxIterations = 100;
-    const tolerance = 0.0001;
-
-    for (let i = 0; i < maxIterations; i++) {
-      let npv = 0;
-      let npvDerivative = 0;
-      
+    for (let i = 0; i < 100; i++) {
+      let npv = 0, npvD = 0;
       for (let t = 0; t < cashFlows.length; t++) {
-        const discountFactor = Math.pow(1 + irr / 12, t + 1);
-        npv += cashFlows[t] / discountFactor;
-        npvDerivative -= (t + 1) * cashFlows[t] / (12 * Math.pow(1 + irr / 12, t + 2));
+        const df = Math.pow(1 + irr / 12, t + 1);
+        npv += cashFlows[t] / df;
+        npvD -= (t + 1) * cashFlows[t] / (12 * Math.pow(1 + irr / 12, t + 2));
       }
-
-      if (Math.abs(npv) < tolerance || Math.abs(npvDerivative) < tolerance) {
-        break;
-      }
-
-      irr = irr - npv / npvDerivative;
-      
+      if (Math.abs(npv) < 0.0001 || Math.abs(npvD) < 0.0001) break;
+      irr = irr - npv / npvD;
       if (irr < -0.99) irr = -0.99;
       if (irr > 10) irr = 10;
     }
 
-    return irr * 100;
+    return {
+      monthlyPayment,
+      remainingBalance,
+      propertyValue,
+      monthlySavingsEffort,
+      cumulativeSavingsEffort,
+      totalInterestPaid,
+      netGain,
+      irr: irr * 100,
+    };
+  }, [loanAmount, monthlyRent, loanDuration, resaleYear, appreciationRate, interestRate]);
+
+  const fmt = (v: number) =>
+    new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Math.round(v));
+
+  const fmtPct = (v: number) => {
+    if (!isFinite(v) || isNaN(v)) return "N/A";
+    return new Intl.NumberFormat("fr-FR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v / 100);
   };
 
-  const irrAnnualized = calculateIRR();
-
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0
-    }).format(Math.round(value));
-  };
-
-  const formatPercent = (value: number) => {
-    if (!isFinite(value) || isNaN(value)) return "N/A";
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'percent',
-      minimumFractionDigits: 1,
-      maximumFractionDigits: 1
-    }).format(value / 100);
-  };
+  const InputRow = ({
+    icon: Icon, label, value, onChange, suffix, step, testId, min = 0
+  }: {
+    icon: React.ElementType; label: string; value: number;
+    onChange: (v: number) => void; suffix: string; step?: number;
+    testId: string; min?: number;
+  }) => (
+    <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+      <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium whitespace-nowrap">
+        <Icon className="h-4 w-4 text-[#1e3a5f]/60 flex-shrink-0" />
+        {label}
+      </Label>
+      <div className="flex items-center gap-1.5">
+        <Input
+          type="number"
+          value={value}
+          min={min}
+          step={step}
+          onChange={(e) => onChange(Math.max(min, Number(e.target.value)))}
+          className="w-28 text-right bg-gray-50 border-gray-200 text-[#1e3a5f] font-semibold h-9 text-sm"
+          data-testid={testId}
+        />
+        <span className="text-gray-400 text-sm w-8">{suffix}</span>
+      </div>
+    </div>
+  );
 
   return (
     <div className="w-full">
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Input Section */}
-        <div className="p-5 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-[#1e3a5f] rounded-md">
-              <Wallet className="h-5 w-5 text-white" />
+        {/* ── Inputs ── */}
+        <div className="rounded-2xl border border-gray-100 bg-gradient-to-b from-slate-50 to-gray-50 p-5 shadow-sm">
+          <div className="flex items-center gap-2.5 mb-5">
+            <div className="p-2 bg-[#1e3a5f] rounded-lg">
+              <Building2 className="h-5 w-5 text-white" />
             </div>
-            <h3 className="font-serif text-xl font-bold text-[#1e3a5f]">Parametres</h3>
+            <div>
+              <h3 className="font-serif text-lg font-bold text-[#1e3a5f]">Paramètres</h3>
+              <p className="text-xs text-gray-400">Simulation immobilière à crédit</p>
+            </div>
           </div>
 
-          <div className="space-y-3">
-            {/* Credit Amount */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <Euro className="h-4 w-4 text-[#1e3a5f]" />
-                Montant du credit
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={creditAmount}
-                  onChange={(e) => setCreditAmount(Math.max(0, Number(e.target.value)))}
-                  className="w-32 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-credit-amount"
-                />
-                <span className="text-gray-500 text-sm">EUR</span>
-              </div>
-            </div>
+          <div className="space-y-2.5">
+            <InputRow icon={Euro} label="Montant du prêt" value={loanAmount} onChange={setLoanAmount} suffix="€" testId="input-credit-amount" />
+            <InputRow icon={Building2} label="Loyer mensuel perçu" value={monthlyRent} onChange={setMonthlyRent} suffix="€" testId="input-monthly-rent" />
+            <InputRow icon={Percent} label="Taux d'intérêt annuel" value={interestRate} onChange={setInterestRate} suffix="%" step={0.1} testId="input-interest-rate-leverage" />
+            <InputRow icon={Clock} label="Durée du prêt" value={loanDuration} onChange={setLoanDuration} suffix="ans" min={1} testId="input-loan-duration-leverage" />
+            <InputRow icon={Calendar} label="Revente après" value={resaleYear} onChange={(v) => setResaleYear(Math.min(v, loanDuration))} suffix="ans" min={1} testId="input-resale-year" />
+            <InputRow icon={TrendingUp} label="Valorisation annuelle" value={appreciationRate} onChange={setAppreciationRate} suffix="%" step={0.5} testId="input-appreciation-rate" />
+          </div>
 
-            {/* Monthly Rent */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <Building2 className="h-4 w-4 text-[#1e3a5f]" />
-                Loyer mensuel percu
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={monthlyRent}
-                  onChange={(e) => setMonthlyRent(Math.max(0, Number(e.target.value)))}
-                  className="w-28 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-monthly-rent"
-                />
-                <span className="text-gray-500 text-sm">EUR</span>
-              </div>
+          {/* Auto-computed monthly payment info */}
+          <div className="mt-4 p-3 bg-[#1e3a5f]/5 rounded-xl border border-[#1e3a5f]/10 flex items-center gap-3">
+            <div className="p-1.5 bg-[#1e3a5f]/10 rounded-lg">
+              <Euro className="h-3.5 w-3.5 text-[#1e3a5f]" />
             </div>
-
-            {/* Monthly Payment */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <PiggyBank className="h-4 w-4 text-[#1e3a5f]" />
-                Mensualites du pret
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={monthlyPayment}
-                  onChange={(e) => setMonthlyPayment(Math.max(0, Number(e.target.value)))}
-                  className="w-28 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-monthly-payment"
-                />
-                <span className="text-gray-500 text-sm">EUR</span>
-              </div>
-            </div>
-
-            {/* Interest Rate */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <Percent className="h-4 w-4 text-[#1e3a5f]" />
-                Taux d'interet
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={interestRate}
-                  onChange={(e) => setInterestRate(Math.max(0, Number(e.target.value)))}
-                  className="w-20 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  step="0.1"
-                  data-testid="input-interest-rate-leverage"
-                />
-                <span className="text-gray-500 text-sm">%</span>
-              </div>
-            </div>
-
-            {/* Loan Duration */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <Clock className="h-4 w-4 text-[#1e3a5f]" />
-                Duree du pret
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={loanDuration}
-                  onChange={(e) => setLoanDuration(Math.max(1, Number(e.target.value)))}
-                  className="w-20 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-loan-duration-leverage"
-                />
-                <span className="text-gray-500 text-sm">ans</span>
-              </div>
-            </div>
-
-            {/* Resale Year */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <Calendar className="h-4 w-4 text-[#1e3a5f]" />
-                Revente apres
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={resaleYear}
-                  onChange={(e) => setResaleYear(Math.max(1, Math.min(Number(e.target.value), loanDuration)))}
-                  className="w-20 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-resale-year"
-                />
-                <span className="text-gray-500 text-sm">ans</span>
-              </div>
-            </div>
-
-            {/* Appreciation Rate */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <TrendingUp className="h-4 w-4 text-[#1e3a5f]" />
-                Plus-value annuelle
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={appreciationRate}
-                  onChange={(e) => setAppreciationRate(Number(e.target.value))}
-                  className="w-20 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  step="0.5"
-                  data-testid="input-appreciation-rate"
-                />
-                <span className="text-gray-500 text-sm">%</span>
-              </div>
+            <div>
+              <p className="text-xs text-[#1e3a5f]/60">Mensualité calculée (taux actuariel)</p>
+              <p className="font-serif font-bold text-[#1e3a5f] text-base" data-testid="text-monthly-payment">
+                {fmt(results.monthlyPayment)}<span className="text-xs font-normal text-[#1e3a5f]/60">/mois</span>
+              </p>
             </div>
           </div>
         </div>
 
-        {/* Result Section */}
-        <div className="p-5 rounded-lg bg-white border border-gray-200 flex flex-col">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-[#1e3a5f] rounded-md">
+        {/* ── Results ── */}
+        <div className="rounded-2xl border border-gray-100 bg-white p-5 shadow-sm flex flex-col gap-4">
+          <div className="flex items-center gap-2.5">
+            <div className="p-2 bg-[#1e3a5f] rounded-lg">
               <TrendingUp className="h-5 w-5 text-white" />
             </div>
-            <h3 className="font-serif text-xl font-bold text-[#1e3a5f]">Resultats</h3>
+            <div>
+              <h3 className="font-serif text-lg font-bold text-[#1e3a5f]">Résultats</h3>
+              <p className="text-xs text-gray-400">Revente à {resaleYear} an{resaleYear > 1 ? "s" : ""}</p>
+            </div>
           </div>
 
-          <div className="flex-1 flex flex-col justify-center space-y-4">
-            {/* Savings Effort */}
-            <div className="p-4 bg-gradient-to-br from-amber-50 to-amber-100 rounded-lg border border-amber-200">
-              <p className="text-xs text-amber-700 mb-1">Effort d'epargne mensuel</p>
-              <p className="font-serif text-2xl font-bold text-amber-800" data-testid="text-monthly-savings-effort">
-                {formatCurrency(averageMonthlySavingsEffort)}
-                <span className="text-sm font-normal text-amber-600">/mois</span>
+          {/* Effort mensuel */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-amber-50 border border-amber-100 p-3">
+              <p className="text-xs text-amber-600/80 mb-0.5">Effort mensuel</p>
+              <p className="font-serif font-bold text-amber-700 text-lg" data-testid="text-monthly-savings-effort">
+                {fmt(results.monthlySavingsEffort)}
               </p>
-              <p className="text-xs text-amber-600 mt-1">
-                = Mensualites ({formatCurrency(monthlyPayment)}) - Loyer ({formatCurrency(monthlyRent)})
+              <p className="text-[10px] text-amber-500 mt-0.5">mensualité − loyer</p>
+            </div>
+            <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
+              <p className="text-xs text-slate-500/80 mb-0.5">Effort cumulé</p>
+              <p className="font-serif font-bold text-[#1e3a5f] text-lg" data-testid="text-cumulative-savings">
+                {fmt(results.cumulativeSavingsEffort)}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5">sur {resaleYear} ans</p>
+            </div>
+          </div>
+
+          {/* Value + CRD */}
+          <div className="grid grid-cols-2 gap-3">
+            <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
+              <p className="text-xs text-slate-500/80 mb-0.5">Valeur du bien</p>
+              <p className="font-serif font-semibold text-[#1e3a5f] text-base" data-testid="text-property-value">
+                {fmt(results.propertyValue)}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5">+{appreciationRate}%/an</p>
+            </div>
+            <div className="rounded-xl bg-slate-50 border border-slate-100 p-3">
+              <p className="text-xs text-slate-500/80 mb-0.5">Capital restant dû</p>
+              <p className="font-serif font-semibold text-[#1e3a5f] text-base" data-testid="text-remaining-balance">
+                {fmt(results.remainingBalance)}
+              </p>
+              <p className="text-[10px] text-slate-400 mt-0.5">à {resaleYear} ans (actuariel)</p>
+            </div>
+          </div>
+
+          {/* Flow arrows */}
+          <div className="rounded-xl bg-slate-50 border border-slate-100 p-3 text-xs text-slate-500 flex items-center gap-1.5 flex-wrap">
+            <span className="font-medium text-[#1e3a5f]">{fmt(results.propertyValue)}</span>
+            <ArrowRight className="h-3 w-3" />
+            <span>− {fmt(results.remainingBalance)}</span>
+            <ArrowRight className="h-3 w-3" />
+            <span>− {fmt(results.cumulativeSavingsEffort)}</span>
+          </div>
+
+          {/* Net gain */}
+          <div className={`rounded-xl border p-4 text-center ${results.netGain >= 0 ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"}`}>
+            <p className="text-xs text-gray-500 mb-1">Gain net à la revente</p>
+            <p className={`font-serif text-3xl font-bold ${results.netGain >= 0 ? "text-green-600" : "text-red-600"}`} data-testid="text-net-gain">
+              {results.netGain >= 0 ? "+" : ""}{fmt(results.netGain)}
+            </p>
+          </div>
+
+          {/* IRR */}
+          <div className="rounded-xl bg-gradient-to-br from-[#D4AF37]/10 to-[#D4AF37]/20 border border-[#D4AF37]/25 p-4 flex items-center justify-between">
+            <div>
+              <p className="text-xs text-[#1e3a5f]/60 mb-0.5">TRI brut annualisé</p>
+              <p className={`font-serif text-2xl font-bold ${results.irr >= 0 ? "text-[#D4AF37]" : "text-red-500"}`} data-testid="text-irr">
+                {fmtPct(results.irr)}
               </p>
             </div>
-
-            {/* Property Value at Resale */}
-            <div className="grid grid-cols-2 gap-3">
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-500 mb-1">Valeur du bien a {resaleYear} ans</p>
-                <p className="font-semibold text-[#1e3a5f]" data-testid="text-property-value">
-                  {formatCurrency(propertyValueAtResale)}
-                </p>
-              </div>
-              <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-                <p className="text-xs text-gray-500 mb-1">Capital restant du</p>
-                <p className="font-semibold text-[#1e3a5f]" data-testid="text-remaining-balance">
-                  {formatCurrency(remainingLoanBalance)}
-                </p>
-              </div>
-            </div>
-
-            {/* Cumulative Savings */}
-            <div className="p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-xs text-gray-500 mb-1">Effort d'epargne cumule sur {resaleYear} ans</p>
-              <p className="font-semibold text-[#1e3a5f]" data-testid="text-cumulative-savings">
-                {formatCurrency(cumulativeSavingsEffort)}
-              </p>
-            </div>
-
-            {/* Net Gain - Main Result */}
-            <div className="text-center p-5 bg-gradient-to-br from-[#1e3a5f]/5 to-[#1e3a5f]/10 rounded-lg border border-[#1e3a5f]/20">
-              <p className="text-xs text-gray-500 mb-2">Gain net a la revente</p>
-              <p className={`font-serif text-3xl font-bold ${netGain >= 0 ? 'text-green-600' : 'text-red-600'}`} data-testid="text-net-gain">
-                {formatCurrency(netGain)}
-              </p>
-              <p className="text-xs text-gray-500 mt-2">
-                = Valeur bien - Capital restant - Effort cumule
-              </p>
-            </div>
-
-            {/* IRR */}
-            <div className="p-4 bg-gradient-to-br from-[#D4AF37]/10 to-[#D4AF37]/20 rounded-lg border border-[#D4AF37]/30">
-              <p className="text-xs text-[#1e3a5f]/70 mb-1">Taux de Rendement Interne (TRI) brut</p>
-              <p className={`font-serif text-2xl font-bold ${irrAnnualized >= 0 ? 'text-[#D4AF37]' : 'text-red-600'}`} data-testid="text-irr">
-                {formatPercent(irrAnnualized)}
-              </p>
-              <p className="text-xs text-[#1e3a5f]/60 mt-1">
-                Rendement annualise de votre investissement
-              </p>
+            <div className="text-right text-xs text-[#1e3a5f]/50">
+              <p>Rendement annualisé</p>
+              <p>de votre apport en effort</p>
             </div>
           </div>
         </div>
       </div>
 
-      {/* Disclaimer */}
-      <div className="mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200">
-        <p className="text-xs text-gray-500 text-center" data-testid="text-leverage-disclaimer">
-          Simulation indicative. Le TRI brut ne tient pas compte des frais de notaire, taxes foncieres, charges de copropriete, travaux, vacance locative et fiscalite. Consultez un conseiller pour une analyse personnalisee.
+      <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-2">
+        <Info className="h-3.5 w-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
+        <p className="text-xs text-gray-400" data-testid="text-leverage-disclaimer">
+          Simulation indicative. La mensualité et le capital restant dû sont calculés avec le taux mensuel actuariel : <em>r = (1 + taux annuel)^(1/12) − 1</em>. Le TRI brut exclut frais de notaire, taxes, charges, vacance locative et fiscalité.
         </p>
       </div>
     </div>

@@ -2,7 +2,7 @@ import { useState, useMemo, useRef } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Calculator, TrendingUp, PiggyBank, Percent, Clock, Info, Download, Calendar, RefreshCw } from "lucide-react";
+import { Calculator, TrendingUp, PiggyBank, Percent, Clock, Info, Download, Calendar, RefreshCw, TableIcon, ChevronDown, ChevronUp } from "lucide-react";
 import { Button } from "@/components/ui/button";
 
 interface YearlyData {
@@ -20,6 +20,7 @@ export default function CompoundInterestCalculator() {
   const [interestRate, setInterestRate] = useState(7);
   const [interestFrequencyMonths, setInterestFrequencyMonths] = useState(12);
   const [hoveredBar, setHoveredBar] = useState<number | null>(null);
+  const [showTable, setShowTable] = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
   const results = useMemo(() => {
@@ -261,6 +262,29 @@ export default function CompoundInterestCalculator() {
     link.click();
   };
 
+  const handleExportCSV = () => {
+    const annualVP = monthlyVP * vpRecurrencesPerYear;
+    const header = ["Année", "Versements de l'année (€)", "Capital cumulé versé (€)", "Intérêts de l'année (€)", "Intérêts cumulés (€)", "Capital total (€)"];
+    const rows = results.yearlyData.map((d, i) => {
+      const prevTotal = i > 0 ? results.yearlyData[i - 1].total : initialCapital;
+      const interestThisYear = d.total - prevTotal - (i === 0 ? 0 : annualVP);
+      return [
+        d.year,
+        i === 0 ? 0 : Math.round(annualVP),
+        Math.round(d.deposits),
+        Math.round(interestThisYear),
+        Math.round(d.interest),
+        Math.round(d.total),
+      ];
+    });
+    const csv = [header, ...rows].map((r) => r.join(";")).join("\n");
+    const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
+    const link = document.createElement("a");
+    link.download = `amortissement-interets-composes-constancium.csv`;
+    link.href = URL.createObjectURL(blob);
+    link.click();
+  };
+
   function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
     ctx.beginPath();
     ctx.moveTo(x + r, y);
@@ -425,10 +449,9 @@ export default function CompoundInterestCalculator() {
               <h3 className="font-serif text-xl font-bold text-[#1e3a5f]">Résultats</h3>
             </div>
             <Button
-              variant="outline"
               size="sm"
               onClick={handleDownload}
-              className="flex items-center gap-1.5 border-[#1e3a5f]/30 text-[#1e3a5f] hover:bg-[#1e3a5f]/5 text-xs h-8"
+              className="flex items-center gap-1.5 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs h-8 shadow-sm"
               data-testid="button-download-result"
             >
               <Download className="h-3.5 w-3.5" />
@@ -549,6 +572,87 @@ export default function CompoundInterestCalculator() {
             </p>
           </div>
         </div>
+      </div>
+
+      {/* Amortization Table */}
+      <div className="mt-6 rounded-xl border border-gray-200 overflow-hidden shadow-sm">
+        <div className="flex items-center justify-between px-5 py-3 bg-[#1e3a5f]">
+          <div className="flex items-center gap-2">
+            <TableIcon className="h-4 w-4 text-[#D4AF37]" />
+            <h4 className="font-serif font-semibold text-white text-sm">Tableau d'amortissement — année par année</h4>
+          </div>
+          <div className="flex items-center gap-2">
+            <Button
+              size="sm"
+              onClick={handleExportCSV}
+              className="flex items-center gap-1.5 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs h-7 px-3"
+              data-testid="button-export-csv"
+            >
+              <Download className="h-3 w-3" />
+              Exporter CSV
+            </Button>
+            <button
+              onClick={() => setShowTable((v) => !v)}
+              className="flex items-center gap-1 text-white/70 hover:text-white text-xs transition-colors"
+              data-testid="button-toggle-table"
+            >
+              {showTable ? <ChevronUp className="h-4 w-4" /> : <ChevronDown className="h-4 w-4" />}
+              {showTable ? "Masquer" : "Afficher"}
+            </button>
+          </div>
+        </div>
+
+        {showTable && (
+          <div className="overflow-x-auto max-h-80 overflow-y-auto">
+            <table className="w-full text-xs">
+              <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+                <tr>
+                  <th className="text-left px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">Année</th>
+                  <th className="text-right px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">Versements<br/><span className="text-gray-400 font-normal">de l'année</span></th>
+                  <th className="text-right px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">Capital versé<br/><span className="text-gray-400 font-normal">cumulé</span></th>
+                  <th className="text-right px-3 py-2.5 font-semibold text-green-700 whitespace-nowrap">Intérêts<br/><span className="text-gray-400 font-normal">de l'année</span></th>
+                  <th className="text-right px-3 py-2.5 font-semibold text-green-700 whitespace-nowrap">Intérêts<br/><span className="text-gray-400 font-normal">cumulés</span></th>
+                  <th className="text-right px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">Capital total</th>
+                </tr>
+              </thead>
+              <tbody>
+                {results.yearlyData.map((d, i) => {
+                  const annualVP = monthlyVP * vpRecurrencesPerYear;
+                  const prevTotal = i > 0 ? results.yearlyData[i - 1].total : initialCapital;
+                  const depositsThisYear = i === 0 ? 0 : annualVP;
+                  const interestThisYear = d.total - prevTotal - depositsThisYear;
+                  const isEven = i % 2 === 0;
+                  return (
+                    <tr
+                      key={d.year}
+                      className={`border-b border-gray-100 hover:bg-[#D4AF37]/5 transition-colors ${isEven ? "bg-white" : "bg-gray-50/50"}`}
+                      data-testid={`row-amortization-${d.year}`}
+                    >
+                      <td className="px-3 py-2 font-semibold text-[#1e3a5f]">
+                        Année {d.year}
+                      </td>
+                      <td className="px-3 py-2 text-right text-gray-600">
+                        {i === 0 ? "—" : formatCurrency(depositsThisYear)}
+                      </td>
+                      <td className="px-3 py-2 text-right text-[#1e3a5f] font-medium">
+                        {formatCurrency(d.deposits)}
+                      </td>
+                      <td className="px-3 py-2 text-right text-green-600 font-medium">
+                        +{formatCurrency(Math.max(0, interestThisYear))}
+                      </td>
+                      <td className="px-3 py-2 text-right text-green-700 font-semibold">
+                        +{formatCurrency(d.interest)}
+                      </td>
+                      <td className="px-3 py-2 text-right font-bold text-[#1e3a5f]">
+                        {formatCurrency(d.total)}
+                      </td>
+                    </tr>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        )}
       </div>
 
       {/* Disclaimer */}
