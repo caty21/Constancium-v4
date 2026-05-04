@@ -157,10 +157,11 @@ export default function CompoundInterestCalculator() {
     ctx.font = "bold 13px Inter, sans-serif";
     ctx.fillText("PARAMÈTRES", 28, 108);
 
+    const annualTotal = monthlyVP * vpRecurrencesPerYear;
     const params = [
       ["Capital initial", formatCurrency(initialCapital)],
-      ["VP mensuelle", formatCurrency(monthlyVP)],
-      ["Récurrences VP / an", `${vpRecurrencesPerYear}x`],
+      ["Vers. prog. mensuel", formatCurrency(monthlyVP)],
+      ["Récurrences / an", `${vpRecurrencesPerYear}x → ${formatCurrency(annualTotal)}/an`],
       ["Durée", `${years} ans`],
       ["Taux annuel", `${interestRate} %`],
       ["Capitalisation", frequencyLabel(interestFrequencyMonths)],
@@ -305,11 +306,11 @@ export default function CompoundInterestCalculator() {
               </div>
             </div>
 
-            {/* Monthly VP */}
+            {/* Monthly versement programmé */}
             <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
               <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
                 <TrendingUp className="h-4 w-4 text-[#1e3a5f]" />
-                VP mensuelle
+                Versement programmé mensuel
               </Label>
               <div className="flex items-center gap-1">
                 <Input
@@ -323,12 +324,12 @@ export default function CompoundInterestCalculator() {
               </div>
             </div>
 
-            {/* VP Recurrences per year */}
+            {/* Versement programmé recurrences per year */}
             <div className="p-3 bg-white rounded-lg border border-gray-200">
               <div className="flex items-center justify-between gap-3 mb-2">
                 <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
                   <RefreshCw className="h-4 w-4 text-[#1e3a5f]" />
-                  Récurrences VP / an
+                  Récurrences versement programmé / an
                 </Label>
                 <span className="text-[#1e3a5f] font-bold text-sm bg-[#1e3a5f]/10 px-2 py-0.5 rounded">
                   {vpRecurrencesPerYear}x
