@@ -28,7 +28,6 @@ export default function ConstanciumHeader() {
   const simulatorSubmenu = [
     { label: "Intérêts composés", href: "/simulateur#interets-composes", icon: TrendingUp, description: "Calculez la croissance de votre capital" },
     { label: "Effet levier", href: "/simulateur#effet-levier", icon: Calculator, description: "Simulez l'effet de levier du crédit" },
-    { label: "Simulateur PER", href: "/simulateur#simulateur-per", icon: ShieldCheck, description: "Estimez votre économie d'impôt retraite" },
     { label: "Transmission", href: "/simulateur#transmission-patrimoniale", icon: Landmark, description: "Abattements, donations, nue-propriété" },
   ];
 
