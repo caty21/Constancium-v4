@@ -1,8 +1,12 @@
 import { useMemo, useState } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { Building2, Euro, Clock, Percent, TrendingUp, Calendar, Info, ChevronDown, ChevronUp, BadgePercent } from "lucide-react";
+import {
+  Building2, Euro, Clock, Percent, TrendingUp, Calendar,
+  Info, ChevronDown, ChevronUp, BadgePercent,
+} from "lucide-react";
 
+// ─── Constants (outside component) ────────────────────────────────────────────
 const SOCIAL_CHARGES = 18.6;
 const TMI_OPTIONS = [
   { label: "11 %", value: 11 },
@@ -10,6 +14,63 @@ const TMI_OPTIONS = [
   { label: "45 %", value: 45 },
 ];
 
+// ─── Sub-components OUTSIDE parent (prevents remount / focus loss) ─────────────
+
+function LevTooltip({ text }: { text: string }) {
+  return (
+    <span className="group relative ml-1 inline-flex flex-shrink-0">
+      <span className="w-3.5 h-3.5 rounded-full bg-gray-300 hover:bg-[#1e3a5f] text-white text-[8px] font-bold flex items-center justify-center cursor-help transition-colors">
+        i
+      </span>
+      <span className="absolute left-0 bottom-full mb-1.5 w-56 bg-[#1e3a5f] text-white text-xs rounded-xl px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-xl leading-relaxed">
+        {text}
+      </span>
+    </span>
+  );
+}
+
+interface InputRowProps {
+  icon: React.ElementType;
+  label: string;
+  value: number;
+  onChange: (v: number) => void;
+  suffix: string;
+  step?: number;
+  testId: string;
+  min?: number;
+  tooltip?: string;
+}
+
+function LevInputRow({ icon: Icon, label, value, onChange, suffix, step = 1, testId, min = 0, tooltip }: InputRowProps) {
+  return (
+    <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
+      <Label className="text-[#1e3a5f] flex items-center gap-1.5 text-sm font-medium shrink-0">
+        <Icon className="h-4 w-4 text-[#1e3a5f]/60 flex-shrink-0" />
+        {label}
+        {tooltip && <LevTooltip text={tooltip} />}
+      </Label>
+      <div className="flex items-center gap-1.5">
+        <Input
+          type="number"
+          value={value}
+          min={min}
+          step={step}
+          onChange={(e) => {
+            const raw = e.target.value;
+            if (raw === "" || raw === "-") return;
+            const parsed = parseFloat(raw);
+            if (!isNaN(parsed)) onChange(Math.max(min, parsed));
+          }}
+          className="w-28 text-right bg-gray-50 border-gray-200 text-[#1e3a5f] font-semibold h-9 text-sm"
+          data-testid={testId}
+        />
+        <span className="text-gray-400 text-sm w-8 flex-shrink-0">{suffix}</span>
+      </div>
+    </div>
+  );
+}
+
+// ─── Types ─────────────────────────────────────────────────────────────────────
 interface YearlyRow {
   year: number;
   mensualitesAnn: number;
@@ -21,6 +82,7 @@ interface YearlyRow {
   effortEpargne: number;
 }
 
+// ─── Main component ────────────────────────────────────────────────────────────
 export default function LeverageCalculator() {
   const [loanAmount, setLoanAmount] = useState(200_000);
   const [monthlyPayment, setMonthlyPayment] = useState(1_170);
@@ -36,32 +98,36 @@ export default function LeverageCalculator() {
 
   const { yearlyData, summary } = useMemo(() => {
     const annualRate = interestRate / 100;
-    const r = Math.pow(1 + annualRate, 1 / 12) - 1; // actuarial monthly rate
+    // Actuarial monthly rate: (1+annual)^(1/12) - 1
+    const r = Math.pow(1 + annualRate, 1 / 12) - 1;
     const fiscalRate = (tmi + SOCIAL_CHARGES) / 100;
-    const years = Math.min(resaleYear, loanDuration);
+    const years = Math.max(1, Math.min(resaleYear, loanDuration));
 
+    // Single pass: build monthly amortization tracking balance & yearly interest
     let balance = loanAmount;
     const rows: YearlyRow[] = [];
 
     for (let y = 0; y < years; y++) {
       const mensualitesAnn = monthlyPayment * 12;
 
-      // Dividende brut: year 1 = rent*12, following years grow by partEvolution
+      // Dividende brut: year 1 = rent×12, then grows by partEvolution each year
       const dividendeBrut =
         y === 0
           ? monthlyRent * 12
           : rows[y - 1].dividendeBrut * (1 + partEvolution / 100);
 
-      // Sum of monthly interest for this year (based on actual balance)
+      // Sum monthly interest for this year using actuarial method on actual balance
       let yearInterest = 0;
       for (let m = 0; m < 12; m++) {
         const intM = balance * r;
         yearInterest += intM;
-        balance = Math.max(0, balance - (monthlyPayment - intM));
+        // Principal repaid = payment minus interest (if payment > interest)
+        const principalRepaid = Math.max(0, monthlyPayment - intM);
+        balance = Math.max(0, balance - principalRepaid);
       }
 
       const bilanFoncier = dividendeBrut - yearInterest;
-      // Tax only on positive bilan foncier
+      // Tax applies only when bilan foncier is positive (revenus fonciers nets imposables)
       const impactFiscal = bilanFoncier > 0 ? bilanFoncier * fiscalRate : 0;
       const dividendeNet = dividendeBrut - impactFiscal;
       const effortEpargne = dividendeNet - mensualitesAnn;
@@ -84,7 +150,7 @@ export default function LeverageCalculator() {
     const netSaleProceeds = propertyValue - remainingBalance;
     const netGain = netSaleProceeds + cumulativeEffort; // cumulativeEffort is negative
 
-    // TRI — linear interpolation on annual cash flows
+    // TRI — linear interpolation (secant method) on annual cash flows
     const cashFlows = rows.map((row) => row.effortEpargne);
     if (cashFlows.length > 0) cashFlows[cashFlows.length - 1] += netSaleProceeds;
 
@@ -94,11 +160,11 @@ export default function LeverageCalculator() {
     let r1 = 0.001, r2 = 0.5;
     let van1 = npvFn(r1), van2 = npvFn(r2);
     let attempts = 0;
-    while (van1 * van2 > 0 && attempts < 50) { r2 *= 2; van2 = npvFn(r2); attempts++; }
+    while (van1 * van2 > 0 && attempts < 60) { r2 *= 2; van2 = npvFn(r2); attempts++; }
 
     let irrAnnual = 0;
     if (van1 * van2 < 0) {
-      for (let i = 0; i < 100; i++) {
+      for (let i = 0; i < 120; i++) {
         const rNew = r1 + (van1 / (van1 - van2)) * (r2 - r1);
         const vanNew = npvFn(rNew);
         if (Math.abs(vanNew) < 0.01) { irrAnnual = rNew * 100; break; }
@@ -122,41 +188,6 @@ export default function LeverageCalculator() {
     return new Intl.NumberFormat("fr-FR", { style: "percent", minimumFractionDigits: 1, maximumFractionDigits: 1 }).format(v / 100);
   };
 
-  const Tooltip = ({ text }: { text: string }) => (
-    <span className="group relative ml-1 inline-flex">
-      <span className="w-3.5 h-3.5 rounded-full bg-gray-300 hover:bg-[#1e3a5f] text-white text-[8px] font-bold flex items-center justify-center cursor-help transition-colors">
-        i
-      </span>
-      <span className="absolute left-0 bottom-full mb-1.5 w-56 bg-[#1e3a5f] text-white text-xs rounded-xl px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-xl leading-relaxed">
-        {text}
-      </span>
-    </span>
-  );
-
-  const InputRow = ({
-    icon: Icon, label, value, onChange, suffix, step = 1, testId, min = 0, tooltip,
-  }: {
-    icon: React.ElementType; label: string; value: number; onChange: (v: number) => void;
-    suffix: string; step?: number; testId: string; min?: number; tooltip?: string;
-  }) => (
-    <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
-      <Label className="text-[#1e3a5f] flex items-center gap-1.5 text-sm font-medium">
-        <Icon className="h-4 w-4 text-[#1e3a5f]/60 flex-shrink-0" />
-        {label}
-        {tooltip && <Tooltip text={tooltip} />}
-      </Label>
-      <div className="flex items-center gap-1.5">
-        <Input
-          type="number" value={value} min={min} step={step}
-          onChange={(e) => onChange(Math.max(min, Number(e.target.value)))}
-          className="w-28 text-right bg-gray-50 border-gray-200 text-[#1e3a5f] font-semibold h-9 text-sm"
-          data-testid={testId}
-        />
-        <span className="text-gray-400 text-sm w-8">{suffix}</span>
-      </div>
-    </div>
-  );
-
   const totalFiscalRate = tmi + SOCIAL_CHARGES;
 
   return (
@@ -174,26 +205,45 @@ export default function LeverageCalculator() {
           </div>
 
           <div className="space-y-2.5">
-            <InputRow icon={Euro} label="Montant du prêt" value={loanAmount} onChange={setLoanAmount} suffix="€" testId="input-credit-amount" />
-            <InputRow
+            <LevInputRow
+              icon={Euro} label="Montant du prêt" value={loanAmount}
+              onChange={setLoanAmount} suffix="€" testId="input-credit-amount"
+            />
+            <LevInputRow
               icon={Euro} label="Mensualité du prêt" value={monthlyPayment}
               onChange={setMonthlyPayment} suffix="€" testId="input-monthly-payment"
               tooltip="Mensualité réelle du prêt AVEC assurance emprunteur incluse dans le montant total versé chaque mois."
             />
-            <InputRow icon={Building2} label="Dividende net / Loyer mensuel" value={monthlyRent} onChange={setMonthlyRent} suffix="€" testId="input-monthly-rent" />
-            <InputRow
+            <LevInputRow
+              icon={Building2} label="Dividende net / Loyer mensuel" value={monthlyRent}
+              onChange={setMonthlyRent} suffix="€" testId="input-monthly-rent"
+            />
+            <LevInputRow
               icon={TrendingUp} label="Évolution valeur de la part" value={partEvolution}
               onChange={setPartEvolution} suffix="%" step={0.1} testId="input-part-evolution"
               tooltip="Taux d'évolution annuel des dividendes/loyers : chaque année les revenus sont multipliés par (1 + ce taux)."
             />
-            <InputRow icon={Percent} label="Taux d'intérêt annuel (TAEG)" value={interestRate} onChange={setInterestRate} suffix="%" step={0.1} testId="input-interest-rate-leverage" />
-            <InputRow icon={Clock} label="Durée du prêt" value={loanDuration} onChange={setLoanDuration} suffix="ans" min={1} testId="input-loan-duration-leverage" />
-            <InputRow icon={Calendar} label="Revente après" value={resaleYear} onChange={(v) => setResaleYear(Math.min(v, loanDuration))} suffix="ans" min={1} testId="input-resale-year" />
-            <InputRow icon={TrendingUp} label="Valorisation du bien" value={appreciationRate} onChange={setAppreciationRate} suffix="%" step={0.5} testId="input-appreciation-rate" />
+            <LevInputRow
+              icon={Percent} label="Taux d'intérêt annuel (TAEG)" value={interestRate}
+              onChange={setInterestRate} suffix="%" step={0.1} testId="input-interest-rate-leverage"
+            />
+            <LevInputRow
+              icon={Clock} label="Durée du prêt" value={loanDuration}
+              onChange={setLoanDuration} suffix="ans" min={1} testId="input-loan-duration-leverage"
+            />
+            <LevInputRow
+              icon={Calendar} label="Revente après" value={resaleYear}
+              onChange={(v) => setResaleYear(Math.min(v, loanDuration))}
+              suffix="ans" min={1} testId="input-resale-year"
+            />
+            <LevInputRow
+              icon={TrendingUp} label="Valorisation du bien" value={appreciationRate}
+              onChange={setAppreciationRate} suffix="%" step={0.5} testId="input-appreciation-rate"
+            />
 
-            {/* TMI */}
+            {/* TMI selector */}
             <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
-              <Label className="text-sm font-medium text-[#1e3a5f] mb-3 flex items-center gap-2">
+              <Label className="text-sm font-medium text-[#1e3a5f] mb-2 flex items-center gap-2">
                 <BadgePercent className="h-4 w-4 text-[#1e3a5f]/60" />
                 Tranche marginale d'imposition
                 <span className="text-[10px] text-gray-400">+ 18,6% charges sociales</span>
@@ -237,7 +287,7 @@ export default function LeverageCalculator() {
             <p className="text-[10px] text-amber-500 mt-1">somme des efforts annuels nets (dividendes − fiscalité − mensualités)</p>
           </div>
 
-          {/* Value + CRD */}
+          {/* Valeur du bien + CRD */}
           <div className="grid grid-cols-2 gap-3">
             <div className={`rounded-xl border p-3 transition-all duration-200 ${showNetGainInfo ? "bg-blue-50 border-blue-200 ring-2 ring-blue-200/50 shadow-md" : "bg-slate-50 border-slate-100"}`}>
               <p className="text-xs text-slate-500/80 mb-0.5">Valeur du bien</p>
@@ -251,7 +301,7 @@ export default function LeverageCalculator() {
             </div>
           </div>
 
-          {/* Net gain */}
+          {/* Gain net */}
           <div className={`rounded-xl border p-4 text-center ${summary.netGain >= 0 ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"}`}>
             <div className="flex items-center justify-center gap-2 mb-1">
               <p className="text-xs text-gray-500">Gain net à la revente</p>
@@ -299,7 +349,7 @@ export default function LeverageCalculator() {
             </p>
           </div>
 
-          {/* IRR */}
+          {/* TRI */}
           <div className="rounded-xl bg-gradient-to-br from-[#D4AF37]/10 to-[#D4AF37]/20 border border-[#D4AF37]/25 p-4 flex items-center justify-between">
             <div>
               <p className="text-xs text-[#1e3a5f]/60 mb-0.5">TRI brut annualisé</p>
@@ -390,7 +440,7 @@ export default function LeverageCalculator() {
                     </td>
                   </tr>
                 ))}
-                {/* Totals row */}
+                {/* Totals */}
                 <tr className="bg-[#1e3a5f]/5 border-t-2 border-[#1e3a5f]/20 font-bold text-xs">
                   <td className="px-3 py-2.5 text-[#1e3a5f]">TOTAL</td>
                   <td className="px-3 py-2.5 text-right text-[#1e3a5f]">{fmt(yearlyData.reduce((a, r) => a + r.mensualitesAnn, 0))}</td>
@@ -409,6 +459,7 @@ export default function LeverageCalculator() {
         )}
       </div>
 
+      {/* Disclaimer */}
       <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-2">
         <Info className="h-3.5 w-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-gray-400" data-testid="text-leverage-disclaimer">
