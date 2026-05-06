@@ -90,7 +90,6 @@ export default function LeverageCalculator() {
   const [partEvolution, setPartEvolution] = useState(1);
   const [loanDuration, setLoanDuration] = useState(20);
   const [resaleYear, setResaleYear] = useState(15);
-  const [appreciationRate, setAppreciationRate] = useState(1);
   const [interestRate, setInterestRate] = useState(3.5);
   const [tmi, setTmi] = useState(30);
   const [showTable, setShowTable] = useState(false);
@@ -145,7 +144,7 @@ export default function LeverageCalculator() {
     }
 
     const remainingBalance = Math.max(0, balance);
-    const propertyValue = loanAmount * Math.pow(1 + appreciationRate / 100, resaleYear);
+    const propertyValue = loanAmount * Math.pow(1 + partEvolution / 100, resaleYear);
     const cumulativeEffort = rows.reduce((acc, row) => acc + row.effortEpargne, 0);
     const netSaleProceeds = propertyValue - remainingBalance;
     const netGain = netSaleProceeds + cumulativeEffort; // cumulativeEffort is negative
@@ -219,9 +218,9 @@ export default function LeverageCalculator() {
               onChange={setMonthlyRent} suffix="€" testId="input-monthly-rent"
             />
             <LevInputRow
-              icon={TrendingUp} label="Évolution valeur de la part" value={partEvolution}
+              icon={TrendingUp} label="Évolution valeur de la part / Valorisation" value={partEvolution}
               onChange={setPartEvolution} suffix="%" step={0.1} testId="input-part-evolution"
-              tooltip="Taux d'évolution annuel des dividendes/loyers : chaque année les revenus sont multipliés par (1 + ce taux)."
+              tooltip="Taux d'évolution annuel appliqué aux deux : dividendes/loyers perçus (croissance annuelle) ET valeur du bien à la revente (revalorisation du capital investi)."
             />
             <LevInputRow
               icon={Percent} label="Taux d'intérêt annuel (TAEG)" value={interestRate}
@@ -235,10 +234,6 @@ export default function LeverageCalculator() {
               icon={Calendar} label="Revente après" value={resaleYear}
               onChange={(v) => setResaleYear(Math.min(v, loanDuration))}
               suffix="ans" min={1} testId="input-resale-year"
-            />
-            <LevInputRow
-              icon={TrendingUp} label="Valorisation du bien" value={appreciationRate}
-              onChange={setAppreciationRate} suffix="%" step={0.5} testId="input-appreciation-rate"
             />
 
             {/* TMI selector */}
@@ -292,7 +287,7 @@ export default function LeverageCalculator() {
             <div className={`rounded-xl border p-3 transition-all duration-200 ${showNetGainInfo ? "bg-blue-50 border-blue-200 ring-2 ring-blue-200/50 shadow-md" : "bg-slate-50 border-slate-100"}`}>
               <p className="text-xs text-slate-500/80 mb-0.5">Valeur du bien</p>
               <p className="font-serif font-semibold text-[#1e3a5f] text-base" data-testid="text-property-value">{fmt(summary.propertyValue)}</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">+{appreciationRate}%/an</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">+{partEvolution}%/an</p>
             </div>
             <div className={`rounded-xl border p-3 transition-all duration-200 ${showNetGainInfo ? "bg-orange-50 border-orange-200 ring-2 ring-orange-200/50 shadow-md" : "bg-slate-50 border-slate-100"}`}>
               <p className="text-xs text-slate-500/80 mb-0.5">Capital restant dû</p>
