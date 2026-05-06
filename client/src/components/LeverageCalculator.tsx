@@ -6,15 +6,57 @@ import {
   Info, ChevronDown, ChevronUp, BadgePercent,
 } from "lucide-react";
 
-// ─── Constants (outside component) ────────────────────────────────────────────
-const SOCIAL_CHARGES = 18.6;
+// ─── Constants ─────────────────────────────────────────────────────────────────
+const SOCIAL_CHARGES = 17.2; // prélèvements sociaux France (taux 2024)
 const TMI_OPTIONS = [
   { label: "11 %", value: 11 },
   { label: "30 %", value: 30 },
   { label: "45 %", value: 45 },
 ];
 
-// ─── Sub-components OUTSIDE parent (prevents remount / focus loss) ─────────────
+// ─── Excel-faithful helpers ────────────────────────────────────────────────────
+
+/**
+ * CUMIPMT equivalent (Excel formula M5 col):
+ * -CUMIPMT(annualRate/12, loanMonths, loan, 12*(year-1)+1, 12*year, 0)
+ * Uses SIMPLE monthly rate = annualRate / 12 (not actuarial), matching Excel.
+ */
+function annualInterestCUMIPMT(
+  annualRate: number,
+  loanMonths: number,
+  loan: number,
+  year: number,
+  simpleRatePmt: number, // pre-computed PMT with simple rate, passed in for efficiency
+  balanceAtYearStart: number
+): number {
+  const simpleRate = annualRate / 12;
+  let bal = balanceAtYearStart;
+  let total = 0;
+  for (let m = 0; m < 12; m++) {
+    const interest = bal * simpleRate;
+    total += interest;
+    bal = Math.max(0, bal - (simpleRatePmt - interest));
+  }
+  return total;
+}
+
+/**
+ * Capital restant dû using Excel formula:
+ * B30 = loan + CUMPRINC((1+annualRate)^(1/12)-1, loanMonths, loan, 1, resaleMonths, 0)
+ * Uses ACTUARIAL monthly rate, payment derived from loan params (not user-entered).
+ */
+function computeCRD(annualRate: number, loanMonths: number, loan: number, resaleMonths: number): number {
+  const r = Math.pow(1 + annualRate, 1 / 12) - 1; // actuarial
+  const pmt = loan * r / (1 - Math.pow(1 + r, -loanMonths));
+  let balance = loan;
+  for (let m = 0; m < resaleMonths; m++) {
+    const interest = balance * r;
+    balance = Math.max(0, balance - (pmt - interest));
+  }
+  return Math.max(0, balance);
+}
+
+// ─── Sub-components (OUTSIDE parent to prevent remount / focus loss) ───────────
 
 function LevTooltip({ text }: { text: string }) {
   return (
@@ -22,7 +64,7 @@ function LevTooltip({ text }: { text: string }) {
       <span className="w-3.5 h-3.5 rounded-full bg-gray-300 hover:bg-[#1e3a5f] text-white text-[8px] font-bold flex items-center justify-center cursor-help transition-colors">
         i
       </span>
-      <span className="absolute left-0 bottom-full mb-1.5 w-56 bg-[#1e3a5f] text-white text-xs rounded-xl px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-xl leading-relaxed">
+      <span className="absolute left-0 bottom-full mb-1.5 w-60 bg-[#1e3a5f] text-white text-xs rounded-xl px-2.5 py-2 opacity-0 group-hover:opacity-100 transition-opacity z-50 pointer-events-none shadow-xl leading-relaxed">
         {text}
       </span>
     </span>
@@ -41,7 +83,9 @@ interface InputRowProps {
   tooltip?: string;
 }
 
-function LevInputRow({ icon: Icon, label, value, onChange, suffix, step = 1, testId, min = 0, tooltip }: InputRowProps) {
+function LevInputRow({
+  icon: Icon, label, value, onChange, suffix, step = 1, testId, min = 0, tooltip,
+}: InputRowProps) {
   return (
     <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
       <Label className="text-[#1e3a5f] flex items-center gap-1.5 text-sm font-medium shrink-0">
@@ -73,13 +117,14 @@ function LevInputRow({ icon: Icon, label, value, onChange, suffix, step = 1, tes
 // ─── Types ─────────────────────────────────────────────────────────────────────
 interface YearlyRow {
   year: number;
-  mensualitesAnn: number;
-  dividendeBrut: number;
-  interets: number;
-  bilanFoncier: number;
-  impactFiscal: number;
-  dividendeNet: number;
-  effortEpargne: number;
+  mensualitesAnn: number;   // K — mensualité × 12
+  dividendeBrut: number;    // L — grows by partEvolution each year
+  interets: number;         // M — CUMIPMT with simple rate
+  bilanFoncier: number;     // S — L - M
+  impactFiscal: number;     // Y — S × (TMI + charges sociales), can be negative
+  dividendeNet: number;     // AA — L - Y (= L - impactFiscal)
+  effortEpargne: number;    // AD — dividendeNet - mensualitesAnn
+  tresorerieNetteCumulee: number; // AF — cumulative effort
 }
 
 // ─── Main component ────────────────────────────────────────────────────────────
@@ -97,60 +142,82 @@ export default function LeverageCalculator() {
 
   const { yearlyData, summary } = useMemo(() => {
     const annualRate = interestRate / 100;
-    // Actuarial monthly rate: (1+annual)^(1/12) - 1
-    const r = Math.pow(1 + annualRate, 1 / 12) - 1;
+    const simpleMonthlyRate = annualRate / 12; // Excel CUMIPMT rate
     const fiscalRate = (tmi + SOCIAL_CHARGES) / 100;
-    const years = Math.max(1, Math.min(resaleYear, loanDuration));
+    const loanMonths = loanDuration * 12;
+    const resaleMonths = Math.max(1, Math.min(resaleYear, loanDuration)) * 12;
+    const years = resaleMonths / 12;
 
-    // Single pass: build monthly amortization tracking balance & yearly interest
-    let balance = loanAmount;
+    // Pre-compute PMT with simple rate (used for interest column)
+    const pmtSimple = simpleMonthlyRate > 0
+      ? loanAmount * simpleMonthlyRate / (1 - Math.pow(1 + simpleMonthlyRate, -loanMonths))
+      : loanAmount / loanMonths;
+
+    // Single pass for annual interests (simple rate, matching CUMIPMT)
+    let balSimple = loanAmount;
+    const annualInterests: number[] = [];
+    for (let y = 0; y < years; y++) {
+      let yearInterest = 0;
+      for (let m = 0; m < 12; m++) {
+        const intM = balSimple * simpleMonthlyRate;
+        yearInterest += intM;
+        balSimple = Math.max(0, balSimple - (pmtSimple - intM));
+      }
+      annualInterests.push(yearInterest);
+    }
+
+    // CRD using actuarial rate + loan params (matching Excel CUMPRINC formula)
+    const remainingBalance = computeCRD(annualRate, loanMonths, loanAmount, resaleMonths);
+
+    // Build yearly rows
     const rows: YearlyRow[] = [];
+    let cumulativeEffort = 0;
 
     for (let y = 0; y < years; y++) {
       const mensualitesAnn = monthlyPayment * 12;
 
-      // Dividende brut: year 1 = rent×12, then grows by partEvolution each year
+      // L column: year 1 = rent×12, subsequent years × (1 + evolution)
       const dividendeBrut =
         y === 0
           ? monthlyRent * 12
           : rows[y - 1].dividendeBrut * (1 + partEvolution / 100);
 
-      // Sum monthly interest for this year using actuarial method on actual balance
-      let yearInterest = 0;
-      for (let m = 0; m < 12; m++) {
-        const intM = balance * r;
-        yearInterest += intM;
-        // Principal repaid = payment minus interest (if payment > interest)
-        const principalRepaid = Math.max(0, monthlyPayment - intM);
-        balance = Math.max(0, balance - principalRepaid);
-      }
+      const interets = annualInterests[y];
 
-      const bilanFoncier = dividendeBrut - yearInterest;
-      // Tax applies only when bilan foncier is positive (revenus fonciers nets imposables)
-      const impactFiscal = bilanFoncier > 0 ? bilanFoncier * fiscalRate : 0;
+      // S = bilan foncier (can be negative → déficit foncier)
+      const bilanFoncier = dividendeBrut - interets;
+
+      // Y = impact fiscal = S × (TMI + charges sociales) — can be negative (tax saving)
+      const impactFiscal = bilanFoncier * fiscalRate;
+
+      // AA = dividende net = dividende brut - impact fiscal
       const dividendeNet = dividendeBrut - impactFiscal;
+
+      // AD = effort épargne
       const effortEpargne = dividendeNet - mensualitesAnn;
+
+      cumulativeEffort += effortEpargne;
 
       rows.push({
         year: y + 1,
         mensualitesAnn,
         dividendeBrut,
-        interets: yearInterest,
+        interets,
         bilanFoncier,
         impactFiscal,
         dividendeNet,
         effortEpargne,
+        tresorerieNetteCumulee: cumulativeEffort,
       });
     }
 
-    const remainingBalance = Math.max(0, balance);
+    // Valeur du bien à la revente (same rate as SCPI evolution)
     const propertyValue = loanAmount * Math.pow(1 + partEvolution / 100, resaleYear);
-    const cumulativeEffort = rows.reduce((acc, row) => acc + row.effortEpargne, 0);
     const netSaleProceeds = propertyValue - remainingBalance;
     const netGain = netSaleProceeds + cumulativeEffort; // cumulativeEffort is negative
 
-    // TRI — linear interpolation (secant method) on annual cash flows
-    const cashFlows = rows.map((row) => row.effortEpargne);
+    // TRI (XIRR equivalent) — linear interpolation on annual net cash flows
+    const cashFlows = rows.map((r) => r.effortEpargne);
     if (cashFlows.length > 0) cashFlows[cashFlows.length - 1] += netSaleProceeds;
 
     const npvFn = (rate: number) =>
@@ -158,8 +225,8 @@ export default function LeverageCalculator() {
 
     let r1 = 0.001, r2 = 0.5;
     let van1 = npvFn(r1), van2 = npvFn(r2);
-    let attempts = 0;
-    while (van1 * van2 > 0 && attempts < 60) { r2 *= 2; van2 = npvFn(r2); attempts++; }
+    let att = 0;
+    while (van1 * van2 > 0 && att < 60) { r2 *= 2; van2 = npvFn(r2); att++; }
 
     let irrAnnual = 0;
     if (van1 * van2 < 0) {
@@ -175,9 +242,16 @@ export default function LeverageCalculator() {
 
     return {
       yearlyData: rows,
-      summary: { remainingBalance, propertyValue, cumulativeEffort, netSaleProceeds, netGain, irr: irrAnnual },
+      summary: {
+        remainingBalance,
+        propertyValue,
+        cumulativeEffort,
+        netSaleProceeds,
+        netGain,
+        irr: irrAnnual,
+      },
     };
-  }, [loanAmount, monthlyPayment, monthlyRent, partEvolution, loanDuration, resaleYear, appreciationRate, interestRate, tmi]);
+  }, [loanAmount, monthlyPayment, monthlyRent, partEvolution, loanDuration, resaleYear, interestRate, tmi]);
 
   const fmt = (v: number) =>
     new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Math.round(v));
@@ -220,7 +294,7 @@ export default function LeverageCalculator() {
             <LevInputRow
               icon={TrendingUp} label="Évolution valeur de la part / Valorisation" value={partEvolution}
               onChange={setPartEvolution} suffix="%" step={0.1} testId="input-part-evolution"
-              tooltip="Taux d'évolution annuel appliqué aux deux : dividendes/loyers perçus (croissance annuelle) ET valeur du bien à la revente (revalorisation du capital investi)."
+              tooltip="Taux d'évolution annuel des dividendes/loyers ET de la valeur du bien à la revente (revalorisation annuelle)."
             />
             <LevInputRow
               icon={Percent} label="Taux d'intérêt annuel (TAEG)" value={interestRate}
@@ -236,12 +310,12 @@ export default function LeverageCalculator() {
               suffix="ans" min={1} testId="input-resale-year"
             />
 
-            {/* TMI selector */}
+            {/* TMI */}
             <div className="p-3 bg-white rounded-xl border border-gray-100 shadow-sm">
               <Label className="text-sm font-medium text-[#1e3a5f] mb-2 flex items-center gap-2">
                 <BadgePercent className="h-4 w-4 text-[#1e3a5f]/60" />
                 Tranche marginale d'imposition
-                <span className="text-[10px] text-gray-400">+ 18,6% charges sociales</span>
+                <span className="text-[10px] text-gray-400">+ {SOCIAL_CHARGES}% prélèvements sociaux</span>
               </Label>
               <div className="grid grid-cols-3 gap-2 mt-2">
                 {TMI_OPTIONS.map((opt) => (
@@ -275,31 +349,33 @@ export default function LeverageCalculator() {
 
           {/* Effort cumulé */}
           <div className={`rounded-xl border p-4 transition-all duration-200 ${showNetGainInfo ? "bg-amber-100 border-amber-300 ring-2 ring-amber-200/60 shadow-md" : "bg-amber-50 border-amber-100"}`}>
-            <p className="text-xs text-amber-600/80 mb-0.5">Effort d'épargne cumulé sur {resaleYear} ans</p>
+            <p className="text-xs text-amber-600/80 mb-0.5">Total effort d'épargne sur {resaleYear} ans</p>
             <p className="font-serif font-bold text-amber-700 text-2xl" data-testid="text-cumulative-savings">
               {fmt(summary.cumulativeEffort)}
             </p>
-            <p className="text-[10px] text-amber-500 mt-1">somme des efforts annuels nets (dividendes − fiscalité − mensualités)</p>
+            <p className="text-[10px] text-amber-500 mt-1">
+              trésorerie nette cumulée · déficit foncier inclus
+            </p>
           </div>
 
           {/* Valeur du bien + CRD */}
           <div className="grid grid-cols-2 gap-3">
             <div className={`rounded-xl border p-3 transition-all duration-200 ${showNetGainInfo ? "bg-blue-50 border-blue-200 ring-2 ring-blue-200/50 shadow-md" : "bg-slate-50 border-slate-100"}`}>
-              <p className="text-xs text-slate-500/80 mb-0.5">Valeur du bien</p>
+              <p className="text-xs text-slate-500/80 mb-0.5">Valeur à la revente</p>
               <p className="font-serif font-semibold text-[#1e3a5f] text-base" data-testid="text-property-value">{fmt(summary.propertyValue)}</p>
               <p className="text-[10px] text-slate-400 mt-0.5">+{partEvolution}%/an</p>
             </div>
             <div className={`rounded-xl border p-3 transition-all duration-200 ${showNetGainInfo ? "bg-orange-50 border-orange-200 ring-2 ring-orange-200/50 shadow-md" : "bg-slate-50 border-slate-100"}`}>
               <p className="text-xs text-slate-500/80 mb-0.5">Capital restant dû</p>
               <p className="font-serif font-semibold text-[#1e3a5f] text-base" data-testid="text-remaining-balance">{fmt(summary.remainingBalance)}</p>
-              <p className="text-[10px] text-slate-400 mt-0.5">à {resaleYear} ans</p>
+              <p className="text-[10px] text-slate-400 mt-0.5">CUMPRINC · taux actuariel</p>
             </div>
           </div>
 
           {/* Gain net */}
           <div className={`rounded-xl border p-4 text-center ${summary.netGain >= 0 ? "bg-green-50 border-green-100" : "bg-red-50 border-red-100"}`}>
             <div className="flex items-center justify-center gap-2 mb-1">
-              <p className="text-xs text-gray-500">Gain net à la revente</p>
+              <p className="text-xs text-gray-500">Bénéfice net de l'opération</p>
               <div className="relative">
                 <button
                   onMouseEnter={() => setShowNetGainInfo(true)}
@@ -310,24 +386,34 @@ export default function LeverageCalculator() {
                   data-testid="button-net-gain-info"
                 >i</button>
                 {showNetGainInfo && (
-                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-64 pointer-events-none">
-                    <div className="bg-white border border-[#1e3a5f]/20 rounded-xl shadow-2xl p-3 text-left">
-                      <p className="text-xs font-semibold text-[#1e3a5f] mb-2">Détail du calcul</p>
+                  <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 w-68 pointer-events-none">
+                    <div className="bg-white border border-[#1e3a5f]/20 rounded-xl shadow-2xl p-3 text-left w-72">
+                      <p className="text-xs font-semibold text-[#1e3a5f] mb-2">Détail — formule Excel B33</p>
                       <div className="space-y-1.5 text-xs">
                         <div className="flex justify-between gap-2">
-                          <span className="flex items-center gap-1.5 text-gray-600"><span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />Valeur du bien</span>
+                          <span className="flex items-center gap-1.5 text-gray-600">
+                            <span className="w-2 h-2 rounded-full bg-blue-400 inline-block" />Valeur à la revente
+                          </span>
                           <span className="font-semibold text-[#1e3a5f]">+{fmt(summary.propertyValue)}</span>
                         </div>
                         <div className="flex justify-between gap-2">
-                          <span className="flex items-center gap-1.5 text-gray-600"><span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Capital restant dû</span>
+                          <span className="flex items-center gap-1.5 text-gray-600">
+                            <span className="w-2 h-2 rounded-full bg-orange-400 inline-block" />Capital restant dû
+                          </span>
                           <span className="font-semibold text-red-500">−{fmt(summary.remainingBalance)}</span>
                         </div>
+                        <div className="border-t pt-1 flex justify-between text-[10px] text-gray-400">
+                          <span>= Solde remboursement</span>
+                          <span className="font-semibold text-[#1e3a5f]">{fmt(summary.netSaleProceeds)}</span>
+                        </div>
                         <div className="flex justify-between gap-2">
-                          <span className="flex items-center gap-1.5 text-gray-600"><span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />Effort cumulé net</span>
+                          <span className="flex items-center gap-1.5 text-gray-600">
+                            <span className="w-2 h-2 rounded-full bg-amber-400 inline-block" />Effort cumulé net
+                          </span>
                           <span className="font-semibold text-red-500">{fmt(summary.cumulativeEffort)}</span>
                         </div>
                         <div className="border-t border-gray-100 pt-1.5 flex justify-between">
-                          <span className="font-semibold text-gray-700">= Gain net</span>
+                          <span className="font-semibold text-gray-700">= Bénéfice net</span>
                           <span className={`font-bold ${summary.netGain >= 0 ? "text-green-600" : "text-red-600"}`}>
                             {summary.netGain >= 0 ? "+" : ""}{fmt(summary.netGain)}
                           </span>
@@ -351,11 +437,11 @@ export default function LeverageCalculator() {
               <p className={`font-serif text-2xl font-bold ${summary.irr >= 0 ? "text-[#D4AF37]" : "text-red-500"}`} data-testid="text-irr">
                 {fmtPct(summary.irr)}
               </p>
-              <p className="text-[10px] text-[#1e3a5f]/40 mt-0.5">interpolation linéaire · flux annuels nets</p>
+              <p className="text-[10px] text-[#1e3a5f]/40 mt-0.5">XIRR · interpolation linéaire · flux annuels</p>
             </div>
             <div className="text-right text-xs text-[#1e3a5f]/50">
               <p>Rendement annualisé</p>
-              <p>de votre effort net</p>
+              <p>de l'effort net d'épargne</p>
             </div>
           </div>
         </div>
@@ -370,7 +456,9 @@ export default function LeverageCalculator() {
             </div>
             <div>
               <h4 className="font-serif font-semibold text-[#1e3a5f] text-sm">Tableau de flux annuels détaillé</h4>
-              <p className="text-[10px] text-gray-400">Dividendes · intérêts · fiscalité {totalFiscalRate}% · effort net annuel</p>
+              <p className="text-[10px] text-gray-400">
+                Dividendes · intérêts (CUMIPMT) · fiscalité {totalFiscalRate}% · effort net · trésorerie cumulée
+              </p>
             </div>
           </div>
           <button
@@ -396,7 +484,7 @@ export default function LeverageCalculator() {
                     Dividende brut<br /><span className="text-gray-400 font-normal">annuel</span>
                   </th>
                   <th className="text-right px-3 py-2.5 font-semibold text-orange-600 whitespace-nowrap">
-                    Intérêts<br /><span className="text-gray-400 font-normal">payés</span>
+                    Intérêts<br /><span className="text-gray-400 font-normal">CUMIPMT</span>
                   </th>
                   <th className="text-right px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">
                     Bilan<br /><span className="text-gray-400 font-normal">foncier</span>
@@ -408,7 +496,10 @@ export default function LeverageCalculator() {
                     Dividende<br /><span className="text-gray-400 font-normal">net</span>
                   </th>
                   <th className="text-right px-3 py-2.5 font-semibold text-amber-700 whitespace-nowrap">
-                    Effort<br /><span className="text-gray-400 font-normal">épargne</span>
+                    Effort<br /><span className="text-gray-400 font-normal">annuel</span>
+                  </th>
+                  <th className="text-right px-3 py-2.5 font-semibold text-slate-600 whitespace-nowrap">
+                    Trésorerie<br /><span className="text-gray-400 font-normal">cumulée</span>
                   </th>
                 </tr>
               </thead>
@@ -426,12 +517,15 @@ export default function LeverageCalculator() {
                     <td className={`px-3 py-2 text-right font-medium ${row.bilanFoncier >= 0 ? "text-green-600" : "text-red-500"}`}>
                       {row.bilanFoncier >= 0 ? "+" : ""}{fmt(row.bilanFoncier)}
                     </td>
-                    <td className="px-3 py-2 text-right text-red-500">
-                      {row.impactFiscal > 0 ? `−${fmt(row.impactFiscal)}` : "—"}
+                    <td className={`px-3 py-2 text-right ${row.impactFiscal > 0 ? "text-red-500" : "text-green-600"}`}>
+                      {row.impactFiscal > 0 ? `−${fmt(row.impactFiscal)}` : row.impactFiscal < 0 ? `+${fmt(Math.abs(row.impactFiscal))}` : "—"}
                     </td>
                     <td className="px-3 py-2 text-right text-green-700 font-medium">{fmt(row.dividendeNet)}</td>
                     <td className={`px-3 py-2 text-right font-bold ${row.effortEpargne >= 0 ? "text-green-600" : "text-amber-700"}`}>
                       {row.effortEpargne >= 0 ? "+" : ""}{fmt(row.effortEpargne)}
+                    </td>
+                    <td className={`px-3 py-2 text-right font-semibold ${row.tresorerieNetteCumulee >= 0 ? "text-green-600" : "text-slate-500"}`}>
+                      {row.tresorerieNetteCumulee >= 0 ? "+" : ""}{fmt(row.tresorerieNetteCumulee)}
                     </td>
                   </tr>
                 ))}
@@ -442,9 +536,14 @@ export default function LeverageCalculator() {
                   <td className="px-3 py-2.5 text-right text-[#1e3a5f]">{fmt(yearlyData.reduce((a, r) => a + r.dividendeBrut, 0))}</td>
                   <td className="px-3 py-2.5 text-right text-orange-600">{fmt(yearlyData.reduce((a, r) => a + r.interets, 0))}</td>
                   <td className="px-3 py-2.5 text-right text-[#1e3a5f]">{fmt(yearlyData.reduce((a, r) => a + r.bilanFoncier, 0))}</td>
-                  <td className="px-3 py-2.5 text-right text-red-500">{fmt(yearlyData.reduce((a, r) => a + r.impactFiscal, 0))}</td>
+                  <td className={`px-3 py-2.5 text-right ${yearlyData.reduce((a, r) => a + r.impactFiscal, 0) > 0 ? "text-red-500" : "text-green-600"}`}>
+                    {fmt(yearlyData.reduce((a, r) => a + r.impactFiscal, 0))}
+                  </td>
                   <td className="px-3 py-2.5 text-right text-green-700">{fmt(yearlyData.reduce((a, r) => a + r.dividendeNet, 0))}</td>
                   <td className={`px-3 py-2.5 text-right ${summary.cumulativeEffort >= 0 ? "text-green-600" : "text-amber-700"}`}>
+                    {summary.cumulativeEffort >= 0 ? "+" : ""}{fmt(summary.cumulativeEffort)}
+                  </td>
+                  <td className={`px-3 py-2.5 text-right ${summary.cumulativeEffort >= 0 ? "text-green-600" : "text-slate-500"}`}>
                     {summary.cumulativeEffort >= 0 ? "+" : ""}{fmt(summary.cumulativeEffort)}
                   </td>
                 </tr>
@@ -458,7 +557,7 @@ export default function LeverageCalculator() {
       <div className="mt-4 p-3 bg-gray-50 rounded-xl border border-gray-100 flex items-start gap-2">
         <Info className="h-3.5 w-3.5 text-gray-400 flex-shrink-0 mt-0.5" />
         <p className="text-xs text-gray-400" data-testid="text-leverage-disclaimer">
-          Simulation indicative. Mensualité saisie inclut l'assurance emprunteur. Intérêts calculés avec le taux mensuel actuariel <em>r = (1+TAEG)^(1/12)−1</em>. Dividendes revalorisés chaque année selon l'évolution de la part. Fiscalité : TMI + 18,6% charges sociales sur le bilan foncier positif. Hors frais de notaire, charges de gestion, vacance locative et impact global sur la fiscalité SCPI.
+          Formules conformes au modèle Excel de référence. <strong>Intérêts</strong> : CUMIPMT(taux/12) — taux simple mensuel. <strong>Capital restant dû</strong> : CUMPRINC((1+taux)^(1/12)−1) — taux actuariel, amortissement théorique hors assurance. <strong>Impact fiscal</strong> : bilan foncier × (TMI + {SOCIAL_CHARGES}% prélèvements sociaux) — déficit foncier déductible si négatif. Simulation indicative, hors frais de notaire, de gestion et vacance locative.
         </p>
       </div>
     </div>
