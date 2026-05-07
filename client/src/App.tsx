@@ -18,6 +18,13 @@ const CGV = lazy(() => import("@/pages/CGV"));
 const Admin = lazy(() => import("@/pages/Admin"));
 const NotFound = lazy(() => import("@/pages/not-found"));
 
+// Précharge les pages principales en arrière-plan après 3s
+setTimeout(() => {
+  import("@/pages/About");
+  import("@/pages/Gamme");
+  import("@/pages/Contact");
+}, 3000);
+
 function Router() {
   return (
     <Suspense fallback={null}>
