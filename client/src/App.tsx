@@ -27,7 +27,7 @@ setTimeout(() => {
 
 function Router() {
   return (
-    <Suspense fallback={<div className="min-h-screen bg-background" />}>
+    <Suspense fallback={null}>
       <Switch>
         <Route path="/" component={Home} />
         <Route path="/about" component={About} />
