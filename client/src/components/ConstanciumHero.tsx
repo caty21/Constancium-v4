@@ -1,7 +1,7 @@
 import { useState, useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { ArrowRight } from "lucide-react";
-import heroImage from "@assets/generated_images/luxury_city_skyline_hero.png";
+import heroImage from "@assets/generated_images/luxury_city_skyline_hero.webp";
 
 export default function ConstanciumHero() {
   const [lineVisible, setLineVisible] = useState(false);
