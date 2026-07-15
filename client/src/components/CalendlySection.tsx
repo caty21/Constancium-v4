@@ -61,13 +61,11 @@ export default function CalendlySection() {
 
           <div className="flex flex-wrap gap-3">
             <a
-              href="https://zcal.co/i/constancium"
-              target="_blank"
-              rel="noopener noreferrer"
+              href="/contact"
               className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-sm px-6 py-3 rounded-lg transition-colors"
-              data-testid="button-prendre-rdv-section"
+              data-testid="button-contact-section"
             >
-              Prendre rendez-vous
+              Nous contacter
               <ArrowRight className="h-4 w-4" />
             </a>
             <a

@@ -178,13 +178,11 @@ export default function ConstanciumHeader() {
 
             <div className="flex items-center gap-3">
               <a
-                href="https://zcal.co/i/constancium"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/contact"
                 className="hidden lg:inline-flex items-center gap-2 bg-[#0F1729] hover:bg-[#1e3a5f] text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-                data-testid="button-prendre-rdv"
+                data-testid="button-contact-nav"
               >
-                Prendre RDV
+                Nous contacter
               </a>
               <Button
                 size="icon"
@@ -216,12 +214,10 @@ export default function ConstanciumHeader() {
               ))}
               <div className="pt-2 pb-1">
                 <a
-                  href="https://zcal.co/i/constancium"
-                  target="_blank"
-                  rel="noopener noreferrer"
+                  href="/contact"
                   className="block w-full text-center bg-[#0F1729] text-white text-sm font-medium px-4 py-3 rounded-lg"
                 >
-                  Prendre rendez-vous
+                  Nous contacter
                 </a>
               </div>
             </nav>

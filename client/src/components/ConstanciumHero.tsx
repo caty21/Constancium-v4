@@ -10,6 +10,11 @@ export default function ConstanciumHero() {
     return () => clearTimeout(t);
   }, []);
 
+  const scrollToServices = () => {
+    const el = document.getElementById("services");
+    if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+  };
+
   return (
     <section className="relative min-h-screen flex flex-col overflow-hidden bg-[#0F1729]">
       {/* Background photo */}
@@ -17,7 +22,7 @@ export default function ConstanciumHero() {
         className="absolute inset-0 bg-cover bg-center scale-105"
         style={{ backgroundImage: `url(${heroImage})` }}
       />
-      {/* Gradient overlay — stronger on left for text legibility */}
+      {/* Gradient overlay */}
       <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/95 via-[#0F1729]/80 to-[#0F1729]/30" />
       <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0F1729]/60" />
 
@@ -53,7 +58,7 @@ export default function ConstanciumHero() {
               style={{ transitionDelay: "240ms" }}
               data-testid="text-hero-subheadline"
             >
-              Un accompagnement sur-mesure pour sécuriser vos projets de vie, 
+              Un accompagnement sur-mesure pour sécuriser vos projets de vie,
               optimiser vos investissements et préparer sereinement l'avenir.
             </p>
 
@@ -63,23 +68,21 @@ export default function ConstanciumHero() {
               style={{ transitionDelay: "360ms" }}
             >
               <a
-                href="https://zcal.co/i/constancium"
-                target="_blank"
-                rel="noopener noreferrer"
+                href="/contact"
                 className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold px-8 py-3.5 rounded-lg transition-colors text-sm"
-                data-testid="button-prendre-rdv-hero"
+                data-testid="button-contact-hero"
               >
-                Prendre rendez-vous
+                Nous contacter
                 <ArrowRight className="h-4 w-4" />
               </a>
-              <a
-                href="#services"
+              <button
+                onClick={scrollToServices}
                 className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors group"
                 data-testid="button-our-services"
               >
                 Découvrir nos services
                 <ArrowRight className="h-4 w-4 group-hover:translate-x-0.5 transition-transform" />
-              </a>
+              </button>
             </div>
           </div>
         </div>
@@ -96,7 +99,7 @@ export default function ConstanciumHero() {
               { number: "100%", label: "Indépendant & fiduciaire" },
               { number: "4", label: "Expertises patrimoniales" },
               { number: "Sur-mesure", label: "Chaque stratégie" },
-              { number: "2025", label: "Fondé à Paris" },
+              { number: "2025", label: "Fondé à Lille" },
             ].map((stat, i) => (
               <div key={i} className="px-6 py-5 text-center">
                 <p className="font-serif text-xl md:text-2xl font-bold text-[#D4AF37]">{stat.number}</p>
@@ -108,14 +111,14 @@ export default function ConstanciumHero() {
       </div>
 
       {/* Scroll indicator */}
-      <a
-        href="#services"
+      <button
+        onClick={scrollToServices}
         className="absolute bottom-28 right-8 hidden md:flex flex-col items-center gap-2 text-white/30 hover:text-white/60 transition-colors"
         aria-label="Défiler vers le bas"
       >
         <span className="text-[10px] tracking-widest uppercase rotate-90 mb-2">Défiler</span>
         <ArrowDown className="h-4 w-4 animate-bounce" />
-      </a>
+      </button>
     </section>
   );
 }

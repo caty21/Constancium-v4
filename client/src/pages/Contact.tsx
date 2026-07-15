@@ -109,11 +109,10 @@ export default function Contact() {
               Choisissez le créneau qui vous convient.
             </p>
             <a
-              href="https://zcal.co/i/constancium"
-              target="_blank" rel="noopener noreferrer"
+              href="mailto:capucine@constancium.com"
               className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold px-8 py-3.5 rounded-lg transition-colors text-sm"
             >
-              Choisir un créneau
+              Envoyer un email
               <ArrowRight className="h-4 w-4" />
             </a>
           </div>

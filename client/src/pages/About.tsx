@@ -52,8 +52,8 @@ export default function About() {
                 className="w-full rounded-2xl shadow-xl object-cover"
                 style={{ maxHeight: "600px", objectPosition: "center top" }}
               />
-              {/* Decorative gold border */}
-              <div className="absolute -bottom-4 -right-4 w-2/3 h-2/3 border-2 border-[#D4AF37]/20 rounded-2xl pointer-events-none" />
+              {/* Decorative gold border — top right */}
+              <div className="absolute -top-4 -right-4 w-2/3 h-full border-2 border-[#D4AF37]/20 rounded-2xl pointer-events-none" />
             </div>
 
             {/* Text */}
@@ -90,11 +90,10 @@ export default function About() {
 
               <div className="flex flex-wrap gap-3 mt-8">
                 <a
-                  href="https://zcal.co/i/constancium"
-                  target="_blank" rel="noopener noreferrer"
+                  href="/contact"
                   className="inline-flex items-center gap-2 bg-[#0F1729] hover:bg-[#1e3a5f] text-white font-medium text-sm px-6 py-3 rounded-lg transition-colors"
                 >
-                  Prendre rendez-vous
+                  Nous contacter
                   <ArrowRight className="h-4 w-4" />
                 </a>
                 <a

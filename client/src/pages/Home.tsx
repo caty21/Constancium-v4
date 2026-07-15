@@ -174,12 +174,10 @@ export default function Home() {
             Le premier rendez-vous est offert, sans engagement. Nous prenons le temps qu'il faut.
           </p>
           <a
-            href="https://zcal.co/i/constancium"
-            target="_blank"
-            rel="noopener noreferrer"
+            href="/contact"
             className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold px-8 py-3.5 rounded-lg transition-colors text-sm"
           >
-            Prendre rendez-vous gratuitement
+            Nous contacter
             <ArrowRight className="h-4 w-4" />
           </a>
         </div>

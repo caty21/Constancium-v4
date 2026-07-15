@@ -82,16 +82,15 @@ export default function ConstanciumFooter() {
 
           {/* RDV CTA */}
           <div>
-            <h4 className="text-xs font-semibold text-[#D4AF37] uppercase tracking-widest mb-5" data-testid="footer-heading-contact">Premier rendez-vous</h4>
+            <h4 className="text-xs font-semibold text-[#D4AF37] uppercase tracking-widest mb-5" data-testid="footer-heading-contact">Contact</h4>
             <p className="text-white/55 text-sm leading-relaxed mb-5">
-              Le premier échange est offert et sans engagement. Prenons le temps de vous connaître.
+              Nous sommes à votre écoute pour répondre à toutes vos questions patrimoniales.
             </p>
             <a
-              href="https://zcal.co/i/constancium"
-              target="_blank" rel="noopener noreferrer"
+              href="/contact"
               className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors"
             >
-              Prendre rendez-vous
+              Nous contacter
               <ArrowRight className="h-3.5 w-3.5" />
             </a>
           </div>
