@@ -177,13 +177,6 @@ export default function ConstanciumHeader() {
             </nav>
 
             <div className="flex items-center gap-3">
-              <a
-                href="/contact"
-                className="hidden lg:inline-flex items-center gap-2 bg-[#0F1729] hover:bg-[#1e3a5f] text-white text-sm font-medium px-5 py-2.5 rounded-lg transition-colors"
-                data-testid="button-contact-nav"
-              >
-                Nous contacter
-              </a>
               <Button
                 size="icon"
                 variant="ghost"
@@ -212,14 +205,6 @@ export default function ConstanciumHeader() {
                   {item.label}
                 </a>
               ))}
-              <div className="pt-2 pb-1">
-                <a
-                  href="/contact"
-                  className="block w-full text-center bg-[#0F1729] text-white text-sm font-medium px-4 py-3 rounded-lg"
-                >
-                  Nous contacter
-                </a>
-              </div>
             </nav>
           </div>
         )}

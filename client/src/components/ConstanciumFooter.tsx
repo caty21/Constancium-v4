@@ -80,19 +80,16 @@ export default function ConstanciumFooter() {
             </ul>
           </div>
 
-          {/* RDV CTA */}
           <div>
             <h4 className="text-xs font-semibold text-[#D4AF37] uppercase tracking-widest mb-5" data-testid="footer-heading-contact">Contact</h4>
-            <p className="text-white/55 text-sm leading-relaxed mb-5">
-              Nous sommes à votre écoute pour répondre à toutes vos questions patrimoniales.
-            </p>
-            <a
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs px-5 py-2.5 rounded-lg transition-colors"
-            >
-              Nous contacter
-              <ArrowRight className="h-3.5 w-3.5" />
-            </a>
+            <div className="space-y-2.5">
+              <a href="tel:+33767694984" className="flex items-center gap-2.5 text-white/55 hover:text-white text-sm transition-colors">
+                <span>07 67 69 49 84</span>
+              </a>
+              <a href="mailto:capucine@constancium.com" className="flex items-center gap-2.5 text-white/55 hover:text-white text-sm transition-colors break-all">
+                <span>capucine@constancium.com</span>
+              </a>
+            </div>
           </div>
         </div>
 

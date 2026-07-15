@@ -59,24 +59,14 @@ export default function CalendlySection() {
             ))}
           </ul>
 
-          <div className="flex flex-wrap gap-3">
-            <a
-              href="/contact"
-              className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-sm px-6 py-3 rounded-lg transition-colors"
-              data-testid="button-contact-section"
-            >
-              Nous contacter
-              <ArrowRight className="h-4 w-4" />
-            </a>
-            <a
+          <a
               href="/demarche"
-              className="inline-flex items-center gap-2 border border-white/20 hover:border-[#D4AF37]/50 text-white hover:text-[#D4AF37] text-sm font-medium px-6 py-3 rounded-lg transition-colors"
+              className="inline-flex items-center gap-2 border border-white/20 hover:border-[#D4AF37]/50 text-white hover:text-[#D4AF37] text-sm font-medium px-6 py-3 rounded-lg transition-colors self-start"
               data-testid="button-en-savoir-plus"
             >
               Notre philosophie
               <ArrowRight className="h-4 w-4" />
             </a>
-          </div>
         </div>
       </div>
     </section>

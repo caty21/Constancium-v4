@@ -90,13 +90,6 @@ export default function About() {
 
               <div className="flex flex-wrap gap-3 mt-8">
                 <a
-                  href="/contact"
-                  className="inline-flex items-center gap-2 bg-[#0F1729] hover:bg-[#1e3a5f] text-white font-medium text-sm px-6 py-3 rounded-lg transition-colors"
-                >
-                  Nous contacter
-                  <ArrowRight className="h-4 w-4" />
-                </a>
-                <a
                   href="https://www.linkedin.com/in/capucinegest/"
                   target="_blank" rel="noopener noreferrer"
                   className="inline-flex items-center gap-2 border border-gray-200 hover:border-[#D4AF37] text-[#0F1729] font-medium text-sm px-6 py-3 rounded-lg transition-colors"

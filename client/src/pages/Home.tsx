@@ -163,26 +163,6 @@ export default function Home() {
       {/* ── Capucine / RDV section ── */}
       <CalendlySection />
 
-      {/* ── Bottom CTA strip ── */}
-      <section className="bg-[#FAFAF8] border-t border-gray-100 py-16">
-        <div className="max-w-4xl mx-auto px-6 md:px-8 text-center">
-          <span className="inline-block text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase mb-4">Commençons</span>
-          <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#0F1729] mb-4">
-            Prêt à construire votre avenir patrimonial ?
-          </h2>
-          <p className="text-gray-500 mb-8 max-w-xl mx-auto">
-            Le premier rendez-vous est offert, sans engagement. Nous prenons le temps qu'il faut.
-          </p>
-          <a
-            href="/contact"
-            className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold px-8 py-3.5 rounded-lg transition-colors text-sm"
-          >
-            Nous contacter
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </div>
-      </section>
-
       <ConstanciumFooter />
     </div>
   );

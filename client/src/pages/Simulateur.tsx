@@ -221,27 +221,6 @@ export default function Simulateur() {
         </div>
       </section>
 
-      {/* Bottom CTA */}
-      <section className="bg-[#0F1729] py-14">
-        <div className="max-w-4xl mx-auto px-6 md:px-8 text-center">
-          <p className="text-[#D4AF37] text-xs font-semibold tracking-widest uppercase mb-3">Conseil personnalisé</p>
-          <h2 className="font-serif text-3xl font-bold text-white mb-4">
-            Besoin d'une analyse sur-mesure ?
-          </h2>
-          <p className="text-white/55 mb-8 max-w-lg mx-auto text-sm">
-            Ces simulateurs donnent des projections indicatives. Pour une stratégie précise adaptée à votre situation, 
-            prenez rendez-vous avec Capucine.
-          </p>
-          <a
-            href="/contact"
-            className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold px-8 py-3.5 rounded-lg transition-colors text-sm"
-          >
-            Nous contacter
-            <ArrowRight className="h-4 w-4" />
-          </a>
-        </div>
-      </section>
-
       <ConstanciumFooter />
     </div>
   );

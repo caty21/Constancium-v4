@@ -67,14 +67,6 @@ export default function ConstanciumHero() {
               className={`flex flex-wrap items-center gap-4 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
               style={{ transitionDelay: "360ms" }}
             >
-              <a
-                href="/contact"
-                className="inline-flex items-center gap-2 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold px-8 py-3.5 rounded-lg transition-colors text-sm"
-                data-testid="button-contact-hero"
-              >
-                Nous contacter
-                <ArrowRight className="h-4 w-4" />
-              </a>
               <button
                 onClick={scrollToServices}
                 className="inline-flex items-center gap-2 text-white/80 hover:text-white text-sm font-medium transition-colors group"
