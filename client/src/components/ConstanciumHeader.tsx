@@ -53,10 +53,8 @@ export default function ConstanciumHeader() {
       </div>
 
       {/* Main nav */}
-      <div className={`transition-all duration-300 ${
-        isScrolled
-          ? "bg-white shadow-lg border-b border-gray-100"
-          : "bg-white/98 backdrop-blur-md"
+      <div className={`transition-all duration-300 bg-white border-b border-gray-100 ${
+        isScrolled ? "shadow-lg" : ""
       }`}>
         <div className="max-w-7xl mx-auto px-6 md:px-8">
           <div className="flex items-center justify-between h-[70px]">
