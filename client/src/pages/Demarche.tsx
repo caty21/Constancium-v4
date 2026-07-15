@@ -1,6 +1,6 @@
 import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
-import { ArrowRight, Stethoscope, Users, Target, HeartHandshake } from "lucide-react";
+import { Stethoscope, Users, Target, HeartHandshake } from "lucide-react";
 
 export default function Demarche() {
   const steps = [
@@ -35,17 +35,21 @@ export default function Demarche() {
       <ConstanciumHeader />
 
       {/* Hero banner */}
-      <section className="pt-[109px] bg-[#0F1729]">
-        <div className="max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-20">
+      <section className="pt-[109px] bg-[#0F1729] relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: "repeating-linear-gradient(-45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)",
+          backgroundSize: "24px 24px"
+        }} />
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-24">
           <div className="flex items-center gap-3 mb-5">
             <div className="h-px w-8 bg-[#D4AF37]" />
             <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase">Notre Philosophie</span>
           </div>
           <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-2xl" data-testid="text-demarche-headline">
             La Démarche<br />
-            <span className="text-[#D4AF37]">Relationnelle</span>
+            <span className="italic text-[#D4AF37]">Relationnelle</span>
           </h1>
-          <p className="text-white/60 text-lg mt-4 max-w-xl">
+          <p className="text-white/50 text-lg mt-5 max-w-xl">
             Une approche centrée sur l'humain pour construire ensemble votre avenir patrimonial
           </p>
         </div>
@@ -61,11 +65,12 @@ export default function Demarche() {
                 <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase">Pourquoi cette approche</span>
               </div>
               <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#0F1729] leading-tight mb-8">
-                Avant les solutions,<br />la connaissance de votre situation
+                Avant les solutions,<br />
+                <span className="italic text-[#D4AF37]">la connaissance de votre situation</span>
               </h2>
-              <div className="space-y-5 text-gray-600 leading-relaxed">
+              <div className="space-y-5 text-gray-500 leading-relaxed">
                 <p>
-                  Chez Constancium, nous pratiquons ce que nous appelons la <strong className="text-[#0F1729]">démarche relationnelle</strong>. 
+                  Chez Constancium, nous pratiquons ce que nous appelons la <strong className="text-[#0F1729] font-semibold">démarche relationnelle</strong>. 
                   Cette approche repose sur une conviction simple : avant de proposer des solutions financières, 
                   il est essentiel de comprendre en profondeur qui vous êtes.
                 </p>
@@ -75,8 +80,8 @@ export default function Demarche() {
                   Ce premier échange est fondamental pour établir une relation de confiance durable.
                 </p>
                 <p>
-                  Durant cette rencontre, nous explorons ensemble vos <strong className="text-[#0F1729]">objectifs de vie</strong>, 
-                  votre <strong className="text-[#0F1729]">parcours personnel et professionnel</strong>, vos préoccupations 
+                  Durant cette rencontre, nous explorons ensemble vos <strong className="text-[#0F1729] font-semibold">objectifs de vie</strong>, 
+                  votre <strong className="text-[#0F1729] font-semibold">parcours personnel et professionnel</strong>, vos préoccupations 
                   et vos aspirations. Cette compréhension globale nous permet ensuite de dégager les stratégies 
                   les plus pertinentes et adaptées à votre situation unique.
                 </p>
@@ -84,12 +89,27 @@ export default function Demarche() {
             </div>
 
             {/* Pull quote */}
-            <div className="lg:pt-16">
-              <div className="border-l-4 border-[#D4AF37] pl-8 py-4 mb-8">
-                <p className="font-serif text-2xl text-[#0F1729] leading-snug italic">
+            <div className="lg:pt-14">
+              <div className="bg-[#F7F6F2] rounded-2xl p-10 relative overflow-hidden">
+                <div className="absolute top-0 left-0 w-1 h-full bg-[#D4AF37]" />
+                <p className="font-serif text-2xl text-[#0F1729] leading-snug italic mb-6">
                   "La clé de notre démarche est d'anticiper — comprendre avant d'agir, pour conseiller avec justesse."
                 </p>
-                <p className="text-[#D4AF37] font-semibold text-sm mt-4">— Capucine Gest, Fondatrice</p>
+                <div className="h-px w-10 bg-[#D4AF37]/40 mb-4" />
+                <p className="text-[#D4AF37] font-semibold text-sm tracking-wide">— Capucine Gest, Fondatrice</p>
+              </div>
+
+              {/* Small stat blocks */}
+              <div className="grid grid-cols-2 gap-4 mt-6">
+                {[
+                  { n: "100%", label: "Indépendant & objectif" },
+                  { n: "Sur-mesure", label: "Chaque stratégie" },
+                ].map((s, i) => (
+                  <div key={i} className="bg-[#0F1729] rounded-xl p-5 text-center">
+                    <p className="font-serif text-xl font-bold text-[#D4AF37]">{s.n}</p>
+                    <p className="text-white/50 text-xs mt-1">{s.label}</p>
+                  </div>
+                ))}
               </div>
             </div>
           </div>
@@ -97,8 +117,12 @@ export default function Demarche() {
       </section>
 
       {/* Process steps — dark */}
-      <section className="bg-[#0F1729] py-20 md:py-28">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
+      <section className="bg-[#0F1729] py-20 md:py-28 relative overflow-hidden">
+        <div className="absolute inset-0 opacity-[0.03]" style={{
+          backgroundImage: "repeating-linear-gradient(45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)",
+          backgroundSize: "24px 24px"
+        }} />
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8">
           <div className="text-center mb-14">
             <div className="flex items-center justify-center gap-3 mb-4">
               <div className="h-px w-8 bg-[#D4AF37]" />
@@ -110,33 +134,24 @@ export default function Demarche() {
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5">
             {steps.map((step, index) => {
               const StepIcon = step.icon;
               return (
                 <div
                   key={index}
-                  className="relative bg-white/5 border border-white/10 rounded-2xl p-7 hover:border-[#D4AF37]/30 hover:bg-white/8 transition-all duration-300 group"
+                  className="relative bg-[#0F1729] p-8 hover:bg-white/[0.03] transition-all duration-300 group"
                   data-testid={`step-card-${index}`}
                 >
-                  {/* Number */}
-                  <span className="font-serif text-4xl font-bold text-[#D4AF37]/20 group-hover:text-[#D4AF37]/40 transition-colors leading-none block mb-4">
+                  <span className="font-serif text-5xl font-bold text-[#D4AF37]/15 group-hover:text-[#D4AF37]/30 transition-colors leading-none block mb-5 select-none">
                     {step.num}
                   </span>
-                  {/* Icon */}
-                  <div className="w-10 h-10 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-lg flex items-center justify-center mb-4">
+                  <div className="w-11 h-11 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-xl flex items-center justify-center mb-5 group-hover:border-[#D4AF37]/40 transition-colors">
                     <StepIcon className="h-5 w-5 text-[#D4AF37]" />
                   </div>
-                  <div className="w-6 h-px bg-[#D4AF37]/40 mb-4" />
+                  <div className="w-6 h-px bg-[#D4AF37]/40 mb-4 group-hover:w-10 group-hover:bg-[#D4AF37]/70 transition-all duration-300" />
                   <h3 className="font-serif text-lg font-bold text-white mb-3">{step.title}</h3>
-                  <p className="text-white/55 text-sm leading-relaxed">{step.description}</p>
-
-                  {/* Connector arrow (not on last) */}
-                  {index < steps.length - 1 && (
-                    <div className="hidden lg:block absolute -right-3 top-1/2 -translate-y-1/2 z-10">
-                      <div className="w-6 h-px bg-[#D4AF37]/30" />
-                    </div>
-                  )}
+                  <p className="text-white/50 text-sm leading-relaxed">{step.description}</p>
                 </div>
               );
             })}
