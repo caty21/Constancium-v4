@@ -1,105 +1,159 @@
 import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
-import { Card } from "@/components/ui/card";
+import { ArrowRight, Award, Users, Target } from "lucide-react";
 import capucinePhoto from "@assets/version finale (1)_1764178750894.jpg";
 
 export default function About() {
-  return (
-    <div className="min-h-screen">
-      <ConstanciumHeader />
-      
-      <section className="pt-32 pb-20 md:pb-32 bg-background">
-        <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="mb-24 text-center md:text-left">
-            <div className="mb-8">
-              <p className="text-primary font-semibold tracking-widest uppercase text-sm mb-4" data-testid="text-about-overline">
-                Notre Histoire
-              </p>
-              <h1 className="font-serif text-6xl md:text-7xl font-bold leading-tight mb-8 text-[#D4AF37]" data-testid="text-about-headline">
-                À Propos de Constancium
-              </h1>
-              <div className="w-16 h-1 bg-primary mb-8" />
-            </div>
-            <p className="font-serif text-2xl md:text-3xl text-foreground max-w-4xl leading-relaxed font-light" data-testid="text-about-subtitle">
-              Découvrez l'expertise, la passion et la vision qui guident notre approche du conseil en gestion de patrimoine
-            </p>
-          </div>
+  const values = [
+    {
+      icon: Award,
+      title: "Audace",
+      description: "Nous proposons des stratégies innovantes et réfléchies pour maximiser votre potentiel patrimonial, sans jamais sacrifier la prudence."
+    },
+    {
+      icon: Users,
+      title: "Sérénité",
+      description: "Un accompagnement rassurant basé sur la transparence totale. Vous avancez en toute sérénité, guidé par une expertise solide."
+    },
+    {
+      icon: Target,
+      title: "Accessibilité",
+      description: "Rendre la gestion de patrimoine compréhensible et accessible à tous, sans compromis sur la qualité du conseil."
+    }
+  ];
 
-          <div className="grid md:grid-cols-2 gap-16 items-center mb-32">
-            <div className="relative group" data-testid="about-image-container">
-              <div className="absolute inset-0 bg-gradient-to-br from-primary/20 to-primary/5 rounded-3xl blur-2xl group-hover:blur-3xl transition-all duration-500" />
-              <div className="relative">
-                <img 
-                  src={capucinePhoto} 
-                  alt="Capucine Gest" 
-                  className="rounded-3xl shadow-2xl w-full h-auto border-2 border-primary/20 group-hover:border-primary/40 transition-all duration-500"
-                />
-              </div>
+  return (
+    <div className="min-h-screen bg-white">
+      <ConstanciumHeader />
+
+      {/* Hero banner */}
+      <section className="pt-[109px] bg-[#0F1729]">
+        <div className="max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-20">
+          <div className="flex items-center gap-3 mb-5">
+            <div className="h-px w-8 bg-[#D4AF37]" />
+            <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase" data-testid="text-about-overline">Notre Histoire</span>
+          </div>
+          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-2xl" data-testid="text-about-headline">
+            À Propos de<br />
+            <span className="text-[#D4AF37]">Constancium</span>
+          </h1>
+        </div>
+      </section>
+
+      {/* Bio section */}
+      <section className="bg-white py-20 md:py-28">
+        <div className="max-w-7xl mx-auto px-6 md:px-8">
+          <div className="grid lg:grid-cols-2 gap-16 items-start">
+            {/* Photo */}
+            <div className="relative" data-testid="about-image-container">
+              <img
+                src={capucinePhoto}
+                alt="Capucine Gest"
+                className="w-full rounded-2xl shadow-xl object-cover"
+                style={{ maxHeight: "600px", objectPosition: "center top" }}
+              />
+              {/* Decorative gold border */}
+              <div className="absolute -bottom-4 -right-4 w-2/3 h-2/3 border-2 border-[#D4AF37]/20 rounded-2xl pointer-events-none" />
             </div>
-            <div>
-              <div className="mb-8">
-                <h2 className="font-serif text-4xl md:text-5xl font-bold mb-3" data-testid="text-bio-title">
-                  Capucine Gest
-                </h2>
-                <div className="w-12 h-1 bg-primary" />
+
+            {/* Text */}
+            <div className="lg:pt-4">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-px w-8 bg-[#D4AF37]" />
+                <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase">Fondatrice</span>
               </div>
-              <div className="space-y-6 text-lg text-foreground leading-relaxed" data-testid="text-bio-content">
+              <h2 className="font-serif text-4xl md:text-5xl font-bold text-[#0F1729] mb-2" data-testid="text-bio-title">
+                Capucine Gest
+              </h2>
+              <div className="w-10 h-0.5 bg-[#D4AF37] mb-8" />
+
+              <div className="space-y-5 text-gray-600 leading-relaxed text-base" data-testid="text-bio-content">
                 <p>
-                  Diplômée de l'ITEEM, école de Centrale Lille Institut, j'ai construit mon parcours à la croisée de l'ingénierie, de la finance et du conseil.
+                  Diplômée de l'ITEEM, école de Centrale Lille Institut, j'ai construit mon parcours 
+                  à la croisée de l'ingénierie, de la finance et du conseil.
                 </p>
                 <p>
-                  Après plusieurs expériences professionnelles, dont l'audit financier dans les services bancaires chez MAZARS à Dublin, j'ai choisi de mettre mon expertise et ma passion au service de l'accompagnement patrimonial.
+                  Après plusieurs expériences professionnelles, dont l'audit financier dans les services 
+                  bancaires chez MAZARS à Dublin, j'ai choisi de mettre mon expertise et ma passion 
+                  au service de l'accompagnement patrimonial.
                 </p>
                 <p>
-                  Constancium, créée en novembre 2025, représente l'aboutissement de cette conviction : l'excellence patrimoniale ne devrait pas être un privilège, mais un droit accessible. À travers cette structure, je m'engage à rendre la gestion de patrimoine à la fois audacieuse, sereine et accessible, pour permettre à chacun de préparer sereinement son avenir et celui de ses proches.
+                  <strong className="text-[#0F1729]">Constancium</strong>, créée en novembre 2025, représente l'aboutissement 
+                  de cette conviction : l'excellence patrimoniale ne devrait pas être un privilège. 
+                  À travers cette structure, je m'engage à rendre la gestion de patrimoine à la fois 
+                  audacieuse, sereine et accessible.
                 </p>
-                <p className="font-serif text-xl font-semibold pt-4">
+                <p className="font-serif text-xl font-semibold text-[#0F1729] pt-2">
                   Capucine.
                 </p>
               </div>
+
+              <div className="flex flex-wrap gap-3 mt-8">
+                <a
+                  href="https://zcal.co/i/constancium"
+                  target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 bg-[#0F1729] hover:bg-[#1e3a5f] text-white font-medium text-sm px-6 py-3 rounded-lg transition-colors"
+                >
+                  Prendre rendez-vous
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+                <a
+                  href="https://www.linkedin.com/in/capucinegest/"
+                  target="_blank" rel="noopener noreferrer"
+                  className="inline-flex items-center gap-2 border border-gray-200 hover:border-[#D4AF37] text-[#0F1729] font-medium text-sm px-6 py-3 rounded-lg transition-colors"
+                >
+                  LinkedIn
+                  <ArrowRight className="h-4 w-4" />
+                </a>
+              </div>
             </div>
           </div>
+        </div>
+      </section>
 
-          <div className="border-t border-primary/10 pt-24 mb-20">
-            <div className="mb-12 text-center">
-              <p className="text-primary font-semibold tracking-widest uppercase text-sm mb-4" data-testid="text-values-overline">
+      {/* Values section */}
+      <section className="bg-[#0F1729] py-20 md:py-28">
+        <div className="max-w-7xl mx-auto px-6 md:px-8">
+          <div className="text-center mb-14">
+            <div className="flex items-center justify-center gap-3 mb-4">
+              <div className="h-px w-8 bg-[#D4AF37]" />
+              <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase" data-testid="text-values-overline">
                 Les Piliers de Notre Approche
-              </p>
-              <h3 className="font-serif text-5xl md:text-6xl font-bold mb-4 text-[#D4AF37]" data-testid="text-values-title">
-                Nos Valeurs
-              </h3>
-              <div className="w-16 h-1 bg-primary mx-auto" />
+              </span>
+              <div className="h-px w-8 bg-[#D4AF37]" />
             </div>
-            <div className="grid md:grid-cols-3 gap-8">
-              {[
-                {
-                  title: "Audace",
-                  description: "Nous proposons des stratégies innovantes et réfléchies pour maximiser votre potentiel patrimonial."
-                },
-                {
-                  title: "Sérénité",
-                  description: "Un accompagnement rassurant basé sur l'expertise et la transparence pour vous permettre d'avancer sereinement."
-                },
-                {
-                  title: "Accessibilité",
-                  description: "Rendre la gestion de patrimoine compréhensible et accessible à tous, sans compromis sur la qualité."
-                }
-              ].map((value, index) => (
-                <Card key={index} className="p-8 hover:border-primary/40 hover:shadow-lg transition-all duration-300 backdrop-blur-sm bg-white/50 dark:bg-white/5" data-testid={`value-card-${index}`}>
-                  <div className="flex items-center gap-4 mb-6">
-                    <div className="w-12 h-12 bg-primary/10 rounded-lg flex items-center justify-center">
-                      <span className="text-2xl font-serif font-bold text-primary">{index + 1}</span>
+            <h3 className="font-serif text-4xl md:text-5xl font-bold text-white" data-testid="text-values-title">
+              Nos Valeurs
+            </h3>
+          </div>
+
+          <div className="grid md:grid-cols-3 gap-8">
+            {values.map((value, index) => {
+              const ValueIcon = value.icon;
+              return (
+                <div
+                  key={index}
+                  className="bg-white/5 border border-white/10 rounded-2xl p-8 hover:border-[#D4AF37]/30 hover:bg-white/8 transition-all duration-300"
+                  data-testid={`value-card-${index}`}
+                >
+                  <div className="flex items-start gap-4 mb-5">
+                    <div className="w-10 h-10 bg-[#D4AF37]/10 border border-[#D4AF37]/20 rounded-lg flex items-center justify-center flex-shrink-0">
+                      <ValueIcon className="h-5 w-5 text-[#D4AF37]" />
                     </div>
-                    <h4 className="font-serif text-2xl font-bold text-primary" data-testid="text-value-title">
-                      {value.title}
-                    </h4>
+                    <div>
+                      <span className="text-[#D4AF37]/40 text-xs font-mono">0{index + 1}</span>
+                      <h4 className="font-serif text-xl font-bold text-white leading-tight" data-testid="text-value-title">
+                        {value.title}
+                      </h4>
+                    </div>
                   </div>
-                  <p className="text-foreground leading-relaxed text-base" data-testid="text-value-description">
+                  <div className="w-6 h-px bg-[#D4AF37]/40 mb-4" />
+                  <p className="text-white/60 leading-relaxed text-sm" data-testid="text-value-description">
                     {value.description}
                   </p>
-                </Card>
-              ))}
-            </div>
+                </div>
+              );
+            })}
           </div>
         </div>
       </section>

@@ -1,0 +1,1 @@
+- [Constancium Redesign System](redesign-system.md) — light editorial aesthetic: white nav + dark info bar, alternating light/dark sections, explicit colors (no CSS vars for light sections).
