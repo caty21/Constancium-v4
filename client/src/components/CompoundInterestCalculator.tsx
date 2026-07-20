@@ -235,6 +235,7 @@ export default function CompoundInterestCalculator() {
   const [years, setYears]                            = useState(20);
   const [interestRate, setInterestRate]              = useState(7);
   const [interestFreqMonths, setInterestFreqMonths] = useState<number>(12);
+  const [vpEnabled, setVpEnabled]                    = useState(false);
   const [rachatEnabled, setRachatEnabled]            = useState(false);
   const [rachatAmount, setRachatAmount]              = useState(200);
   const [rachatFreqMonths, setRachatFreqMonths]      = useState<number>(1);
@@ -256,9 +257,10 @@ export default function CompoundInterestCalculator() {
 
     for (let m = 1; m <= totalMonths; m++) {
       // VP deposit
-      if (vpAmount > 0 && m % vpIntervalMonths === 0) {
-        balance        += vpAmount;
-        totalDeposited += vpAmount;
+      const effectiveVp = vpEnabled ? vpAmount : 0;
+      if (effectiveVp > 0 && m % vpIntervalMonths === 0) {
+        balance        += effectiveVp;
+        totalDeposited += effectiveVp;
       }
       // Interest compounding
       if (m % interestFreqMonths === 0) {
@@ -409,20 +411,40 @@ export default function CompoundInterestCalculator() {
             <NumInput value={initialCapital} onChange={setInitialCapital} suffix="€" testId="input-initial-capital" />
           </Row>
 
-          {/* Versement programmé */}
-          <Row icon={<TrendingUp className="h-4 w-4 text-[#0F1729]/50" />} label="Versement par occurrence">
-            <NumInput value={vpAmount} onChange={setVpAmount} suffix="€" testId="input-monthly-vp" />
-          </Row>
+          {/* ── Versement programmé ── */}
+          <div className={`rounded-xl border transition-all ${vpEnabled ? "border-[#0F1729]/20 bg-[#0F1729]/5" : "border-dashed border-gray-200 bg-white"}`}>
+            <button
+              className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[#0F1729]"
+              onClick={() => setVpEnabled(v => !v)}
+              data-testid="toggle-vp"
+            >
+              <span className="flex items-center gap-2">
+                <TrendingUp className="h-4 w-4 text-[#0F1729]/60" />
+                Versement programmé
+              </span>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-colors ${
+                vpEnabled ? "bg-[#0F1729] text-white" : "bg-gray-100 text-gray-400"
+              }`}>
+                {vpEnabled ? "Activé" : "Désactivé"}
+              </span>
+            </button>
 
-          {/* Fréquence VP */}
-          <Block icon={<RefreshCw className="h-4 w-4 text-[#0F1729]/50" />} label="Fréquence du versement programmé">
-            <SegBtn options={VP_FREQS} value={vpFreqPerYear as any} onChange={setVpFreqPerYear as any} />
-            {vpAmount > 0 && annualVP > 0 && (
-              <p className="text-xs text-gray-400 mt-1.5">
-                Soit <span className="text-[#0F1729] font-semibold">{fmt(annualVP)}</span> versés / an
-              </p>
+            {vpEnabled && (
+              <div className="px-4 pb-4 space-y-3 border-t border-[#0F1729]/10 pt-3">
+                <Row icon={null} label="Montant par occurrence">
+                  <NumInput value={vpAmount} onChange={setVpAmount} suffix="€" testId="input-monthly-vp" />
+                </Row>
+                <Block icon={null} label="Fréquence du versement programmé">
+                  <SegBtn options={VP_FREQS} value={vpFreqPerYear as any} onChange={setVpFreqPerYear as any} />
+                  {annualVP > 0 && (
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      Soit <span className="text-[#0F1729] font-semibold">{fmt(annualVP)}</span> versés / an
+                    </p>
+                  )}
+                </Block>
+              </div>
             )}
-          </Block>
+          </div>
 
           {/* Durée */}
           <Row icon={<Clock className="h-4 w-4 text-[#0F1729]/50" />} label="Durée">
