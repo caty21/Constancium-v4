@@ -82,10 +82,10 @@ export default function LitteratureJuridique() {
                 <strong>Propriétaire :</strong> capucine@constancium.com<br />
                 <strong>Responsable de publication :</strong> Constancium<br />
                 <strong>Webmaster :</strong> Contacter capucine@constancium.com<br />
-                <strong>Hébergeur :</strong> AZURE Microsoft<br />
-                Siège social : One Microsoft Way, Redmond, WA 98052, USA<br />
-                N° de TVA : FR 39 327733184<br />
-                Code APE : 62.02A
+                <strong>Hébergeur :</strong> OVH SAS<br />
+                Siège social : 2 rue Kellermann, 59100 Roubaix, France<br />
+                N° de TVA : FR 22 424 761 419<br />
+                Code APE : 6311Z
               </p>
             </section>
 
