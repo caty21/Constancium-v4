@@ -19,7 +19,18 @@ export default function LitteratureJuridique() {
                 <strong>Constancium</strong> - Dénomination commerciale de <strong>Constancium Patrimoine & Capital</strong> - E.I - SIREN 993095611 - capucine@constancium.com - www.constancium.com
               </p>
               <p className="leading-relaxed mt-4">
-                Enregistré à l’ORIAS sous le n°26000030 (<a href="https://www.orias.fr" target="_blank" rel="noopener noreferrer" className="text-[#D4AF37] hover:underline">www.orias.fr</a>) en qualité de : - Intermédiaire en assurance en qualité de courtier adhérent de l'ANACOFI – association agréée par l’Autorité des Marchés Financiers. Ne peut directement recevoir aucun fonds, effet, ou valeur.
+                Enregistré à l'ORIAS sous le n°26000030 (<a href="https://www.orias.fr" target="_blank" rel="noopener noreferrer" className="text-[#D4AF37] hover:underline">www.orias.fr</a>) en qualité de :
+              </p>
+              <ul className="mt-3 space-y-2 pl-4 border-l-2 border-[#D4AF37]/30">
+                <li className="leading-relaxed">— <strong>Intermédiaire en assurance</strong> en qualité de courtier adhérent de l'ANACOFI – association agréée par l'Autorité des Marchés Financiers. Ne peut directement recevoir aucun fonds, effet, ou valeur.</li>
+                <li className="leading-relaxed">— <strong>Mandataire d'intermédiaires en opérations de banque et en services de paiement (MIOBSP)</strong></li>
+                <li className="leading-relaxed">— <strong>Agent lié (ALPSI)</strong></li>
+              </ul>
+              <p className="leading-relaxed mt-4">
+                <strong>Carte professionnelle Transactions Immobilières :</strong><br />
+                Attestation n° : ADC31012026000003020<br />
+                Carte professionnelle n° : CPI31012015000001813<br />
+                Délivrée par : CCI de Toulouse
               </p>
               <p className="leading-relaxed mt-4">
                 Constancium est l'abréviation commerciale de la société Constancium Patrimoine & Capital et constitue une dénomination unique pour une même entité juridique. Les deux dénominations font référence à la même personne morale, sans distinction juridique ou administrative.
