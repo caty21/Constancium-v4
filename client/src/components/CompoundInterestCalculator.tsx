@@ -231,7 +231,7 @@ function SegBtn<T extends number>({ options, value, onChange }: {
 export default function CompoundInterestCalculator() {
   const [initialCapital, setInitialCapital]         = useState(10000);
   const [vpAmount, setVpAmount]                     = useState(200);
-  const [vpFreqPerYear, setVpFreqPerYear]            = useState<number>(12);
+  const [vpFreqPerYear, setVpFreqPerYear]            = useState<number>(1);
   const [years, setYears]                            = useState(20);
   const [interestRate, setInterestRate]              = useState(7);
   const [interestFreqMonths, setInterestFreqMonths] = useState<number>(12);
