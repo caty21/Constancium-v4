@@ -256,9 +256,9 @@ export default function CompoundInterestCalculator() {
     const yearlyData: YearlyData[] = [];
 
     for (let m = 1; m <= totalMonths; m++) {
-      // VP deposit
+      // VP deposit (démarre à partir de l'an 2)
       const effectiveVp = vpEnabled ? vpAmount : 0;
-      if (effectiveVp > 0 && m % vpIntervalMonths === 0) {
+      if (effectiveVp > 0 && m > 12 && m % vpIntervalMonths === 0) {
         balance        += effectiveVp;
         totalDeposited += effectiveVp;
       }
