@@ -6,15 +6,15 @@ export default function LitteratureJuridique() {
     <div className="min-h-screen">
       <ConstanciumHeader />
       
-      <section className="pt-32 pb-20 md:pb-32 bg-background">
+      <section className="pt-32 pb-20 md:pb-32 bg-white">
         <div className="max-w-4xl mx-auto px-6 md:px-8">
           <h1 className="font-serif text-5xl md:text-6xl font-bold mb-12 text-[#D4AF37]" data-testid="text-literature-headline">
             Littérature Juridique
           </h1>
 
-          <div className="prose prose-invert max-w-none space-y-8 text-foreground">
+          <div className="max-w-none space-y-8 text-[#0F1729]">
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">1. Présentation du site et de la société</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">1. Présentation du site et de la société</h2>
               <p className="leading-relaxed">
                 <strong>Constancium</strong> - Dénomination commerciale de <strong>Constancium Patrimoine & Capital</strong> - E.I - SIREN 993095611 - capucine@constancium.com - www.constancium.com
               </p>
@@ -33,14 +33,14 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">Assurance Constancium</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">Assurance Constancium</h2>
               <p className="leading-relaxed">
                 <strong>Assurance Responsabilité Civile Professionnelle auprès de AON - Zurich Insurance n° 7400023129</strong>
               </p>
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">2. Description des services</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">2. Description des services</h2>
               <p className="leading-relaxed">
                 Constancium propose aux utilisateurs un service de conseil en gestion de patrimoine et, le cas échéant, un service d'intermédiation pour souscrire des contrats auprès de partenaires financiers et assureurs. Constancium travaille avec des partenaires sélectionnés et reconnus dans le secteur pour proposer des solutions patrimoniales adaptées à votre profil.
               </p>
@@ -53,7 +53,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">3. Accès au site et services</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">3. Accès au site et services</h2>
               <p className="leading-relaxed">
                 Le site www.constancium.com est accessible gratuitement en tout lieu à tout utilisateur ayant un accès à Internet. Tous les frais supportés par l'utilisateur pour accéder au site (matériel informatique, logiciels, connexion Internet, etc.) sont à sa charge. L'accès au site peut à tout moment faire l'objet d'une interruption, d'une suspension, d'une modification sans préavis pour une maintenance ou pour tout autre cas.
               </p>
@@ -63,7 +63,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">4. Responsabilité éditoriale</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">4. Responsabilité éditoriale</h2>
               <p className="leading-relaxed">
                 En vertu de l'article 6 de la loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique, il est précisé aux utilisateurs du site l'identité des différents intervenants :
               </p>
@@ -79,7 +79,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">5. Contenu et propriété intellectuelle</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">5. Contenu et propriété intellectuelle</h2>
               <p className="leading-relaxed">
                 Constancium est propriétaire des droits de propriété intellectuelle ou détient les droits d'usage sur tous les éléments accessibles sur le site, notamment les textes, images, graphismes, logo, icônes, sons et logiciels. Le contenu du site est réservé à l'usage strictement personnel de l'utilisateur.
               </p>
@@ -92,7 +92,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">6. Limitations de responsabilité</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">6. Limitations de responsabilité</h2>
               <p className="leading-relaxed">
                 Constancium ne pourra être tenue responsable que du contenu du site qu'elle a elle-même édité. Constancium s'efforce de fournir des informations aussi précises que possible mais elle ne saurait être tenue responsable des omissions, inexactitudes ou carences dans la mise à jour de ces informations, notamment en cas de modification des dispositions législatives ou réglementaires.
               </p>
@@ -108,7 +108,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">7. Liens hypertextes et cookies</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">7. Liens hypertextes et cookies</h2>
               <p className="leading-relaxed">
                 Des liens hypertextes peuvent être présents sur le site. L'utilisateur est informé qu'en cliquant sur ces liens, il sera dirigé en dehors du site. Constancium n'a pas de contrôle sur les pages web sur lesquelles aboutissent ces liens et n'est en aucun cas responsable du contenu de ces sites. Les liens sont proposés à titre strictement indicatif.
               </p>
@@ -118,7 +118,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">8. Gestion des données personnelles et RGPD</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">8. Gestion des données personnelles et RGPD</h2>
               <p className="leading-relaxed">
                 En France, les données personnelles sont protégées par la loi n° 78-17 du 6 janvier 1978, la loi n° 2004-801 du 6 août 2004, l'article L. 226-13 du Code pénal et le Règlement Général sur la Protection des Données (RGPD 2016/679).
               </p>
@@ -150,14 +150,14 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">9. Sécurité et protection des données</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">9. Sécurité et protection des données</h2>
               <p className="leading-relaxed">
                 Constancium met en œuvre tous les moyens techniques et organisationnels requis pour garantir la sécurité de vos données au quotidien et, en particulier, pour lutter contre tout risque de destruction, perte, altération, ou divulgation non autorisée de vos données. Nous utilisons le chiffrement (https), les contrôles d'accès, les antivirus et les serveurs de secours pour protéger vos informations.
               </p>
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">10. Rémunération et transparence</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">10. Rémunération et transparence</h2>
               <p className="leading-relaxed">
                 Dans le cadre de la mise en relation avec un conseiller, et préalablement à toute prestation, vous recevrez un document d'entrée en relation conforme à la réglementation applicable. Ce document présente notamment les informations légales relatives à Constancium, à son statut, à sa rémunération, ainsi qu'aux modalités d'exécution de sa mission.
               </p>
@@ -167,7 +167,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">11. Dispositions générales et contact</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">11. Dispositions générales et contact</h2>
               <p className="leading-relaxed">
                 Lorsqu'il utilise un formulaire de contact, l'utilisateur du site s'engage à ne pas transmettre de message à caractère raciste, injurieux ou diffamatoire.
               </p>
@@ -182,7 +182,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">12. Droit applicable et juridiction compétente</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">12. Droit applicable et juridiction compétente</h2>
               <p className="leading-relaxed">
                 Les conditions présentées dans cette littérature juridique sont soumises au droit français. Tout différend entre les parties relativement à ces conditions fera l'objet d'une tentative de règlement amiable. À défaut, les tribunaux français seront seuls compétents.
               </p>
@@ -192,7 +192,7 @@ export default function LitteratureJuridique() {
             </section>
 
             <section>
-              <h2 className="font-serif text-3xl font-bold mb-4 text-primary">13. Textes de référence</h2>
+              <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">13. Textes de référence</h2>
               <ul className="list-disc list-inside space-y-2 leading-relaxed">
                 <li>Loi n° 78-17 du 6 janvier 1978, notamment modifiée par la loi n° 2004-801 du 6 août 2004 relative à l'informatique, aux fichiers et aux libertés</li>
                 <li>Loi n° 2004-575 du 21 juin 2004 pour la confiance dans l'économie numérique</li>
