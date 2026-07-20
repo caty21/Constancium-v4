@@ -1,457 +1,493 @@
-import { useState, useMemo, useRef } from "react";
+import { useState, useMemo, useRef, useCallback } from "react";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Slider } from "@/components/ui/slider";
-import { Calculator, TrendingUp, PiggyBank, Percent, Clock, Info, Download, Calendar, RefreshCw, TableIcon, ChevronDown, ChevronUp } from "lucide-react";
+import {
+  Calculator, TrendingUp, PiggyBank, Percent, Clock,
+  Info, Download, Calendar, RefreshCw, TableIcon,
+  ChevronDown, ChevronUp, Minus, Plus
+} from "lucide-react";
 import { Button } from "@/components/ui/button";
 
+/* ─── Types ─────────────────────────────────────────── */
 interface YearlyData {
   year: number;
   deposits: number;
   interest: number;
   total: number;
+  totalWithdrawn: number;
 }
 
+/* ─── Constants ─────────────────────────────────────── */
+const VP_FREQS = [
+  { label: "Annuel",      value: 1  },
+  { label: "Semestriel",  value: 2  },
+  { label: "Trimestriel", value: 4  },
+  { label: "Bimestriel",  value: 6  },
+  { label: "Mensuel",     value: 12 },
+];
+
+const INTEREST_FREQS = [
+  { label: "Mensuel",     value: 1  },
+  { label: "Trimestriel", value: 3  },
+  { label: "Semestriel",  value: 6  },
+  { label: "Annuel",      value: 12 },
+];
+
+const RACHAT_FREQS = [
+  { label: "Mensuel",     value: 1  },
+  { label: "Trimestriel", value: 3  },
+  { label: "Semestriel",  value: 6  },
+  { label: "Annuel",      value: 12 },
+];
+
+/* ─── Helpers ────────────────────────────────────────── */
+const fmt = (v: number) =>
+  new Intl.NumberFormat("fr-FR", { style: "currency", currency: "EUR", maximumFractionDigits: 0 }).format(Math.round(v));
+
+const frequencyLabel = (months: number) => {
+  if (months === 1)  return "mensuelle";
+  if (months === 3)  return "trimestrielle";
+  if (months === 6)  return "semestrielle";
+  if (months === 12) return "annuelle";
+  return `tous les ${months} mois`;
+};
+
+/* ─── SVG Chart ──────────────────────────────────────── */
+const CW = 560, CH = 190;
+const PAD = { top: 12, right: 16, bottom: 30, left: 62 };
+const IW = CW - PAD.left - PAD.right;
+const IH = CH - PAD.top - PAD.bottom;
+
+function AreaChart({ data, hoveredIdx, onHover }: {
+  data: YearlyData[];
+  hoveredIdx: number | null;
+  onHover: (idx: number | null) => void;
+}) {
+  const maxVal = data.length > 0 ? data[data.length - 1].total : 1;
+
+  const xOf = (i: number) => PAD.left + (i / (data.length - 1 || 1)) * IW;
+  const yOf = (v: number) => PAD.top + IH - (v / maxVal) * IH;
+
+  // Y-axis ticks
+  const yTicks = [0, 0.25, 0.5, 0.75, 1].map(r => ({ r, val: maxVal * r }));
+
+  // X-axis ticks
+  const xTicks: number[] = [];
+  const step = data.length <= 10 ? 1 : data.length <= 20 ? 5 : 10;
+  for (let i = step; i <= data.length; i += step) xTicks.push(i - 1);
+  if (xTicks[xTicks.length - 1] !== data.length - 1) xTicks.push(data.length - 1);
+
+  // Polygon points
+  const totalPts = data.map((d, i) => `${xOf(i)},${yOf(d.total)}`).join(" ");
+  const depositPts = data.map((d, i) => `${xOf(i)},${yOf(d.deposits)}`).join(" ");
+  const bottomL = `${xOf(0)},${PAD.top + IH}`;
+  const bottomR = `${xOf(data.length - 1)},${PAD.top + IH}`;
+
+  const depositPolygon = `${bottomL} ${depositPts} ${bottomR}`;
+  const interestPolygon = `${depositPts} ${data.map((d, i) => `${xOf(data.length - 1 - i)},${yOf(data[data.length - 1 - i].total)}`).join(" ")}`;
+
+  const handleMouseMove = useCallback((e: React.MouseEvent<SVGSVGElement>) => {
+    const rect = e.currentTarget.getBoundingClientRect();
+    const x = (e.clientX - rect.left) * (CW / rect.width) - PAD.left;
+    const idx = Math.round((x / IW) * (data.length - 1));
+    onHover(Math.max(0, Math.min(data.length - 1, idx)));
+  }, [data.length, onHover]);
+
+  return (
+    <svg
+      viewBox={`0 0 ${CW} ${CH}`}
+      className="w-full"
+      style={{ height: CH }}
+      onMouseMove={handleMouseMove}
+      onMouseLeave={() => onHover(null)}
+    >
+      <defs>
+        <linearGradient id="gradDeposit" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#0F1729" stopOpacity="0.85" />
+          <stop offset="100%" stopColor="#0F1729" stopOpacity="0.55" />
+        </linearGradient>
+        <linearGradient id="gradInterest" x1="0" y1="0" x2="0" y2="1">
+          <stop offset="0%"   stopColor="#D4AF37" stopOpacity="0.90" />
+          <stop offset="100%" stopColor="#D4AF37" stopOpacity="0.45" />
+        </linearGradient>
+        <clipPath id="chartClip">
+          <rect x={PAD.left} y={PAD.top} width={IW} height={IH} />
+        </clipPath>
+      </defs>
+
+      {/* Grid lines */}
+      {yTicks.map(({ r, val }) => (
+        <g key={r}>
+          <line
+            x1={PAD.left} x2={PAD.left + IW}
+            y1={yOf(val)} y2={yOf(val)}
+            stroke="#E8E5DC" strokeWidth={r === 0 ? 1.5 : 0.75}
+          />
+          <text
+            x={PAD.left - 8} y={yOf(val) + 4}
+            textAnchor="end" fontSize={9.5}
+            fill="#9CA3AF" fontFamily="Inter, sans-serif"
+          >
+            {val >= 1_000_000
+              ? `${(val / 1_000_000).toFixed(1)}M€`
+              : val >= 1_000
+              ? `${Math.round(val / 1_000)}k€`
+              : `${Math.round(val)}€`}
+          </text>
+        </g>
+      ))}
+
+      {/* X-axis labels */}
+      {xTicks.map(i => (
+        <text key={i}
+          x={xOf(i)} y={CH - 4}
+          textAnchor="middle" fontSize={9.5}
+          fill="#9CA3AF" fontFamily="Inter, sans-serif"
+        >
+          {data[i].year}a
+        </text>
+      ))}
+
+      {/* Area: deposits (navy) */}
+      <polygon
+        points={depositPolygon}
+        fill="url(#gradDeposit)"
+        clipPath="url(#chartClip)"
+      />
+
+      {/* Area: interest (gold) */}
+      <polygon
+        points={interestPolygon}
+        fill="url(#gradInterest)"
+        clipPath="url(#chartClip)"
+      />
+
+      {/* Top line (total) */}
+      <polyline
+        points={totalPts}
+        fill="none"
+        stroke="#D4AF37"
+        strokeWidth={2}
+        strokeLinejoin="round"
+        clipPath="url(#chartClip)"
+      />
+
+      {/* Deposit line */}
+      <polyline
+        points={depositPts}
+        fill="none"
+        stroke="#0F1729"
+        strokeWidth={1.5}
+        strokeDasharray="4 3"
+        strokeLinejoin="round"
+        clipPath="url(#chartClip)"
+      />
+
+      {/* Hover crosshair */}
+      {hoveredIdx !== null && (
+        <>
+          <line
+            x1={xOf(hoveredIdx)} x2={xOf(hoveredIdx)}
+            y1={PAD.top} y2={PAD.top + IH}
+            stroke="#D4AF37" strokeWidth={1} strokeDasharray="3 3"
+          />
+          <circle cx={xOf(hoveredIdx)} cy={yOf(data[hoveredIdx].total)}
+            r={4} fill="#D4AF37" stroke="white" strokeWidth={1.5} />
+          <circle cx={xOf(hoveredIdx)} cy={yOf(data[hoveredIdx].deposits)}
+            r={3} fill="#0F1729" stroke="white" strokeWidth={1.5} />
+        </>
+      )}
+    </svg>
+  );
+}
+
+/* ─── Segmented Button ────────────────────────────────── */
+function SegBtn<T extends number>({ options, value, onChange }: {
+  options: { label: string; value: T }[];
+  value: T;
+  onChange: (v: T) => void;
+}) {
+  return (
+    <div className="flex flex-wrap gap-1">
+      {options.map(o => (
+        <button
+          key={o.value}
+          onClick={() => onChange(o.value)}
+          className={`px-2.5 py-1 rounded-md text-xs font-medium transition-all ${
+            value === o.value
+              ? "bg-[#0F1729] text-white shadow-sm"
+              : "bg-gray-100 text-gray-500 hover:bg-gray-200"
+          }`}
+        >
+          {o.label}
+        </button>
+      ))}
+    </div>
+  );
+}
+
+/* ─── Main Component ─────────────────────────────────── */
 export default function CompoundInterestCalculator() {
-  const [initialCapital, setInitialCapital] = useState(10000);
-  const [monthlyVP, setMonthlyVP] = useState(0);
-  const [vpRecurrencesPerYear, setVpRecurrencesPerYear] = useState(12);
-  const [years, setYears] = useState(20);
-  const [interestRate, setInterestRate] = useState(7);
-  const [interestFrequencyMonths, setInterestFrequencyMonths] = useState(12);
-  const [hoveredBar, setHoveredBar] = useState<number | null>(null);
-  const [showTable, setShowTable] = useState(false);
+  const [initialCapital, setInitialCapital]         = useState(10000);
+  const [vpAmount, setVpAmount]                     = useState(200);
+  const [vpFreqPerYear, setVpFreqPerYear]            = useState<number>(12);
+  const [years, setYears]                            = useState(20);
+  const [interestRate, setInterestRate]              = useState(7);
+  const [interestFreqMonths, setInterestFreqMonths] = useState<number>(12);
+  const [rachatEnabled, setRachatEnabled]            = useState(false);
+  const [rachatAmount, setRachatAmount]              = useState(200);
+  const [rachatFreqMonths, setRachatFreqMonths]      = useState<number>(1);
+  const [hoveredIdx, setHoveredIdx]                  = useState<number | null>(null);
+  const [showTable, setShowTable]                    = useState(false);
   const resultsRef = useRef<HTMLDivElement>(null);
 
+  /* ─── Simulation (month by month) ─── */
   const results = useMemo(() => {
     const annualRate = interestRate / 100;
-    const n = 12 / interestFrequencyMonths;
-    const r_n = annualRate / n;
-    const annualVP = monthlyVP * vpRecurrencesPerYear;
-    const depositPerPeriod = annualVP / n;
+    const ratePerPeriod = Math.pow(1 + annualRate, interestFreqMonths / 12) - 1;
+    const vpIntervalMonths = 12 / vpFreqPerYear;
+    const totalMonths = years * 12;
 
+    let balance        = initialCapital;
+    let totalDeposited = initialCapital;
+    let totalWithdrawn = 0;
     const yearlyData: YearlyData[] = [];
 
-    for (let year = 1; year <= years; year++) {
-      const periods = n * year;
-      const totalDeposits = initialCapital + annualVP * year;
-
-      let balance: number;
-      if (annualRate === 0) {
-        balance = totalDeposits;
-      } else if (depositPerPeriod === 0) {
-        balance = initialCapital * Math.pow(1 + r_n, periods);
-      } else {
-        const principalGrowth = initialCapital * Math.pow(1 + r_n, periods);
-        const annuityGrowth = depositPerPeriod * ((Math.pow(1 + r_n, periods) - 1) / r_n);
-        balance = principalGrowth + annuityGrowth;
+    for (let m = 1; m <= totalMonths; m++) {
+      // VP deposit
+      if (vpAmount > 0 && m % vpIntervalMonths === 0) {
+        balance        += vpAmount;
+        totalDeposited += vpAmount;
+      }
+      // Interest compounding
+      if (m % interestFreqMonths === 0) {
+        balance *= (1 + ratePerPeriod);
+      }
+      // Rachat (withdrawal)
+      if (rachatEnabled && rachatAmount > 0 && m % rachatFreqMonths === 0) {
+        const withdraw = Math.min(balance, rachatAmount);
+        balance        -= withdraw;
+        totalWithdrawn += withdraw;
       }
 
-      yearlyData.push({
-        year,
-        deposits: totalDeposits,
-        interest: balance - totalDeposits,
-        total: balance
-      });
+      if (m % 12 === 0) {
+        const netTotal = Math.max(0, balance);
+        yearlyData.push({
+          year: m / 12,
+          deposits: totalDeposited,
+          interest: Math.max(0, netTotal - totalDeposited + totalWithdrawn),
+          total: netTotal,
+          totalWithdrawn,
+        });
+      }
     }
 
-    const finalData = yearlyData[yearlyData.length - 1];
-
-    return {
-      finalCapital: finalData?.total || initialCapital,
-      totalDeposits: finalData?.deposits || initialCapital,
-      totalInterest: finalData?.interest || 0,
-      yearlyData
+    const last = yearlyData[yearlyData.length - 1] ?? {
+      year: years, deposits: initialCapital, interest: 0,
+      total: initialCapital, totalWithdrawn: 0
     };
-  }, [initialCapital, monthlyVP, vpRecurrencesPerYear, years, interestRate, interestFrequencyMonths]);
 
-  const formatCurrency = (value: number) => {
-    return new Intl.NumberFormat('fr-FR', {
-      style: 'currency',
-      currency: 'EUR',
-      maximumFractionDigits: 0
-    }).format(Math.round(value));
-  };
+    return { yearlyData, last };
+  }, [initialCapital, vpAmount, vpFreqPerYear, years, interestRate, interestFreqMonths, rachatEnabled, rachatAmount, rachatFreqMonths]);
 
-  const maxChartValue = results.yearlyData.length > 0
-    ? results.yearlyData[results.yearlyData.length - 1].total
-    : 0;
+  const { yearlyData, last } = results;
+  const multiplier = last.deposits > 0 ? last.total / last.deposits : 1;
+  const annualVP   = vpAmount * vpFreqPerYear;
+  const annualWithdrawal = rachatEnabled ? rachatAmount * (12 / rachatFreqMonths) : 0;
 
-  const getXAxisLabels = () => {
-    const labels: { year: number; position: number }[] = [];
-    if (years <= 10) {
-      for (let i = 1; i <= years; i++) {
-        labels.push({ year: i, position: ((i - 1) / (years - 1)) * 100 });
-      }
-    } else if (years <= 20) {
-      for (let i = 0; i <= years; i += 5) {
-        if (i === 0) continue;
-        labels.push({ year: i, position: ((i - 1) / (years - 1)) * 100 });
-      }
-      if (years % 5 !== 0) {
-        labels.push({ year: years, position: 100 });
-      }
-    } else {
-      for (let i = 0; i <= years; i += 10) {
-        if (i === 0) continue;
-        labels.push({ year: i, position: ((i - 1) / (years - 1)) * 100 });
-      }
-      if (years % 10 !== 0) {
-        labels.push({ year: years, position: 100 });
-      }
-    }
-    return labels;
-  };
-
-  const multiplier = results.totalDeposits > 0 ? results.finalCapital / results.totalDeposits : 1;
-
-  const frequencyLabel = (months: number) => {
-    if (months === 1) return "mensuelle";
-    if (months === 3) return "trimestrielle";
-    if (months === 6) return "semestrielle";
-    if (months === 12) return "annuelle";
-    return `tous les ${months} mois`;
-  };
-
+  /* ─── Download PNG ─── */
   const handleDownload = () => {
     const canvas = document.createElement("canvas");
-    const dpr = 2;
-    const W = 700;
-    const H = 520;
-    canvas.width = W * dpr;
-    canvas.height = H * dpr;
-    canvas.style.width = `${W}px`;
-    canvas.style.height = `${H}px`;
+    const dpr = 2, W = 700, H = 420;
+    canvas.width = W * dpr; canvas.height = H * dpr;
     const ctx = canvas.getContext("2d")!;
     ctx.scale(dpr, dpr);
+    ctx.fillStyle = "#0F1729"; ctx.fillRect(0, 0, W, H);
+    ctx.fillStyle = "#D4AF37"; ctx.font = "bold 20px Georgia, serif";
+    ctx.fillText("Simulation — Intérêts Composés", 28, 40);
+    ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.font = "12px Inter, sans-serif";
+    const d = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
+    ctx.fillText(`Constancium · ${d}`, 28, 60);
+    ctx.strokeStyle = "#D4AF37"; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(28, 72); ctx.lineTo(W - 28, 72); ctx.stroke();
 
-    const gold = "#D4AF37";
-    const navy = "#0F1729";
-    const navy2 = "#1e3a5f";
-    const green = "#16a34a";
-    const white = "#ffffff";
-    const muted = "rgba(255,255,255,0.6)";
-
-    ctx.fillStyle = navy;
-    ctx.fillRect(0, 0, W, H);
-
-    ctx.fillStyle = "rgba(255,255,255,0.03)";
-    ctx.fillRect(0, 0, W, 90);
-
-    ctx.fillStyle = gold;
-    ctx.font = "bold 22px Georgia, serif";
-    ctx.fillText("Simulation — Intérêts Composés", 28, 38);
-
-    ctx.fillStyle = muted;
-    ctx.font = "13px Inter, sans-serif";
-    const date = new Date().toLocaleDateString("fr-FR", { day: "2-digit", month: "long", year: "numeric" });
-    ctx.fillText(`Constancium  ·  ${date}`, 28, 60);
-
-    ctx.strokeStyle = gold;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(28, 80);
-    ctx.lineTo(W - 28, 80);
-    ctx.stroke();
-
-    ctx.fillStyle = white;
-    ctx.font = "bold 13px Inter, sans-serif";
-    ctx.fillText("PARAMÈTRES", 28, 108);
-
-    const annualTotal = monthlyVP * vpRecurrencesPerYear;
     const params = [
-      ["Capital initial", formatCurrency(initialCapital)],
-      ["Vers. prog. mensuel", formatCurrency(monthlyVP)],
-      ["Récurrences / an", `${vpRecurrencesPerYear}x → ${formatCurrency(annualTotal)}/an`],
+      ["Capital initial", fmt(initialCapital)],
+      ["VP / occurrence", fmt(vpAmount)],
+      ["Fréquence VP", VP_FREQS.find(f => f.value === vpFreqPerYear)?.label ?? ""],
       ["Durée", `${years} ans`],
       ["Taux annuel", `${interestRate} %`],
-      ["Capitalisation", frequencyLabel(interestFrequencyMonths)],
+      ["Capitalisation", frequencyLabel(interestFreqMonths)],
+      ...(rachatEnabled ? [["Rachat", `${fmt(rachatAmount)} / ${frequencyLabel(rachatFreqMonths)}`]] : []),
     ];
 
-    ctx.font = "13px Inter, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.7)"; ctx.font = "11px Inter, sans-serif";
     const colW = (W - 56) / 3;
-    params.forEach(([label, val], i) => {
-      const col = i % 3;
-      const row = Math.floor(i / 3);
-      const x = 28 + col * colW;
-      const y = 132 + row * 44;
-
-      ctx.fillStyle = "rgba(255,255,255,0.05)";
-      roundRect(ctx, x, y - 18, colW - 8, 36, 6);
-      ctx.fill();
-
-      ctx.fillStyle = muted;
-      ctx.font = "11px Inter, sans-serif";
-      ctx.fillText(label, x + 10, y - 2);
-      ctx.fillStyle = white;
-      ctx.font = "bold 13px Inter, sans-serif";
-      ctx.fillText(val, x + 10, y + 14);
+    params.forEach(([lbl, val], i) => {
+      const col = i % 3, row = Math.floor(i / 3);
+      const x = 28 + col * colW, y = 96 + row * 42;
+      ctx.fillStyle = "rgba(255,255,255,0.06)";
+      ctx.fillRect(x, y - 14, colW - 8, 34);
+      ctx.fillStyle = "rgba(255,255,255,0.4)"; ctx.font = "10px Inter, sans-serif";
+      ctx.fillText(lbl, x + 8, y);
+      ctx.fillStyle = "#fff"; ctx.font = "bold 12px Inter, sans-serif";
+      ctx.fillText(val, x + 8, y + 14);
     });
 
-    ctx.fillStyle = white;
-    ctx.font = "bold 13px Inter, sans-serif";
-    ctx.fillText("RÉSULTATS", 28, 240);
-
-    ctx.strokeStyle = gold;
-    ctx.lineWidth = 1;
-    ctx.beginPath();
-    ctx.moveTo(28, 250);
-    ctx.lineTo(W - 28, 250);
-    ctx.stroke();
+    ctx.strokeStyle = "#D4AF37"; ctx.lineWidth = 0.5;
+    ctx.beginPath(); ctx.moveTo(28, 196); ctx.lineTo(W - 28, 196); ctx.stroke();
 
     ctx.fillStyle = "rgba(212,175,55,0.12)";
-    roundRect(ctx, 28, 264, W - 56, 100, 10);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(212,175,55,0.4)";
-    ctx.lineWidth = 1;
-    roundRect(ctx, 28, 264, W - 56, 100, 10);
-    ctx.stroke();
-
-    ctx.fillStyle = muted;
-    ctx.font = "13px Inter, sans-serif";
-    ctx.textAlign = "center";
-    ctx.fillText("Capital final estimé", W / 2, 289);
-    ctx.fillStyle = gold;
-    ctx.font = "bold 36px Georgia, serif";
-    ctx.fillText(formatCurrency(results.finalCapital), W / 2, 328);
+    ctx.fillRect(28, 208, W - 56, 88);
+    ctx.strokeStyle = "rgba(212,175,55,0.4)"; ctx.lineWidth = 1;
+    ctx.strokeRect(28, 208, W - 56, 88);
+    ctx.fillStyle = "rgba(255,255,255,0.5)"; ctx.font = "12px Inter, sans-serif";
+    ctx.textAlign = "center"; ctx.fillText("Capital final estimé", W / 2, 230);
+    ctx.fillStyle = "#D4AF37"; ctx.font = "bold 32px Georgia, serif";
+    ctx.fillText(fmt(last.total), W / 2, 268);
     if (multiplier > 1) {
-      ctx.fillStyle = "rgba(212,175,55,0.8)";
-      ctx.font = "13px Inter, sans-serif";
-      ctx.fillText(`× ${multiplier.toFixed(1)} votre mise`, W / 2, 350);
+      ctx.fillStyle = "rgba(212,175,55,0.7)"; ctx.font = "12px Inter, sans-serif";
+      ctx.fillText(`× ${multiplier.toFixed(1)} votre mise`, W / 2, 288);
     }
-
     ctx.textAlign = "left";
-    const cardW = (W - 56 - 16) / 2;
 
-    ctx.fillStyle = "rgba(255,255,255,0.05)";
-    roundRect(ctx, 28, 384, cardW, 64, 8);
-    ctx.fill();
-    ctx.fillStyle = muted;
-    ctx.font = "11px Inter, sans-serif";
-    ctx.fillText("Total versé", 38, 404);
-    ctx.fillStyle = white;
-    ctx.font = "bold 15px Georgia, serif";
-    ctx.fillText(formatCurrency(results.totalDeposits), 38, 428);
+    const cards = [
+      ["Total versé", fmt(last.deposits), "#fff"],
+      ["Intérêts générés", `+${fmt(last.interest)}`, "#4ade80"],
+      ...(rachatEnabled ? [["Total retiré", `-${fmt(last.totalWithdrawn)}`, "#f87171"]] : []),
+    ];
+    const cw = (W - 56 - (cards.length - 1) * 12) / cards.length;
+    cards.forEach(([lbl, val, col], i) => {
+      const x = 28 + i * (cw + 12);
+      ctx.fillStyle = "rgba(255,255,255,0.05)";
+      ctx.fillRect(x, 316, cw, 60);
+      ctx.fillStyle = "rgba(255,255,255,0.4)"; ctx.font = "10px Inter, sans-serif";
+      ctx.fillText(lbl, x + 10, 336);
+      ctx.fillStyle = col; ctx.font = "bold 14px Georgia, serif";
+      ctx.fillText(val, x + 10, 358);
+    });
 
-    ctx.fillStyle = "rgba(22,163,74,0.12)";
-    roundRect(ctx, 28 + cardW + 16, 384, cardW, 64, 8);
-    ctx.fill();
-    ctx.strokeStyle = "rgba(22,163,74,0.3)";
-    ctx.lineWidth = 1;
-    roundRect(ctx, 28 + cardW + 16, 384, cardW, 64, 8);
-    ctx.stroke();
-    ctx.fillStyle = muted;
-    ctx.font = "11px Inter, sans-serif";
-    ctx.fillText("Intérêts générés", 28 + cardW + 26, 404);
-    ctx.fillStyle = green;
-    ctx.font = "bold 15px Georgia, serif";
-    ctx.fillText(`+${formatCurrency(results.totalInterest)}`, 28 + cardW + 26, 428);
-
-    ctx.fillStyle = muted;
-    ctx.font = "11px Inter, sans-serif";
+    ctx.fillStyle = "rgba(255,255,255,0.3)"; ctx.font = "10px Inter, sans-serif";
     ctx.textAlign = "center";
-    ctx.fillText(
-      "Simulation indicative. Capitalisation " + frequencyLabel(interestFrequencyMonths) + ". Les performances passées ne préjugent pas des performances futures.",
-      W / 2,
-      498
-    );
+    ctx.fillText("Simulation indicative. Les performances passées ne préjugent pas des performances futures.", W / 2, 400);
 
     const link = document.createElement("a");
-    link.download = `simulation-interets-composes-constancium.png`;
+    link.download = "simulation-interets-composes-constancium.png";
     link.href = canvas.toDataURL("image/png");
     link.click();
   };
 
+  /* ─── Export CSV ─── */
   const handleExportCSV = () => {
-    const annualVP = monthlyVP * vpRecurrencesPerYear;
-    const header = ["Année", "Versements de l'année (€)", "Capital cumulé versé (€)", "Intérêts de l'année (€)", "Intérêts cumulés (€)", "Capital total (€)"];
-    const rows = results.yearlyData.map((d, i) => {
-      const prevTotal = i > 0 ? results.yearlyData[i - 1].total : initialCapital;
-      const interestThisYear = d.total - prevTotal - (i === 0 ? 0 : annualVP);
-      return [
-        d.year,
-        i === 0 ? 0 : Math.round(annualVP),
-        Math.round(d.deposits),
-        Math.round(interestThisYear),
-        Math.round(d.interest),
-        Math.round(d.total),
-      ];
-    });
-    const csv = [header, ...rows].map((r) => r.join(";")).join("\n");
+    const header = ["Année", "VP cumulés (€)", "Capital versé (€)", "Rachats cumulés (€)", "Intérêts cumulés (€)", "Capital net (€)"];
+    const rows = yearlyData.map(d => [d.year, Math.round(d.deposits - initialCapital), Math.round(d.deposits), Math.round(d.totalWithdrawn), Math.round(d.interest), Math.round(d.total)]);
+    const csv = [header, ...rows].map(r => r.join(";")).join("\n");
     const blob = new Blob(["\uFEFF" + csv], { type: "text/csv;charset=utf-8;" });
     const link = document.createElement("a");
-    link.download = `amortissement-interets-composes-constancium.csv`;
+    link.download = "amortissement-interets-composes-constancium.csv";
     link.href = URL.createObjectURL(blob);
     link.click();
   };
 
-  function roundRect(ctx: CanvasRenderingContext2D, x: number, y: number, w: number, h: number, r: number) {
-    ctx.beginPath();
-    ctx.moveTo(x + r, y);
-    ctx.lineTo(x + w - r, y);
-    ctx.quadraticCurveTo(x + w, y, x + w, y + r);
-    ctx.lineTo(x + w, y + h - r);
-    ctx.quadraticCurveTo(x + w, y + h, x + w - r, y + h);
-    ctx.lineTo(x + r, y + h);
-    ctx.quadraticCurveTo(x, y + h, x, y + h - r);
-    ctx.lineTo(x, y + r);
-    ctx.quadraticCurveTo(x, y, x + r, y);
-    ctx.closePath();
-  }
-
+  /* ─── Render ─── */
   return (
     <div className="w-full" ref={resultsRef}>
       <div className="grid lg:grid-cols-2 gap-6">
-        {/* Inputs Section */}
-        <div className="p-5 rounded-lg bg-gradient-to-br from-gray-50 to-gray-100 border border-gray-200">
-          <div className="flex items-center gap-2 mb-4">
-            <div className="p-2 bg-[#1e3a5f] rounded-md">
-              <Calculator className="h-5 w-5 text-white" />
+
+        {/* ── Paramètres ── */}
+        <div className="rounded-2xl border border-gray-100 bg-[#FAFAF9] p-6 space-y-4">
+          <div className="flex items-center gap-2 mb-1">
+            <div className="p-2 bg-[#0F1729] rounded-xl">
+              <Calculator className="h-4.5 w-4.5 text-white" style={{ width: "1.1rem", height: "1.1rem" }} />
             </div>
-            <h3 className="font-serif text-xl font-bold text-[#1e3a5f]">Paramètres</h3>
+            <h3 className="font-serif text-lg font-bold text-[#0F1729]">Paramètres</h3>
           </div>
 
-          <div className="space-y-3">
-            {/* Initial Capital */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <PiggyBank className="h-4 w-4 text-[#1e3a5f]" />
-                Capital initial
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={initialCapital}
-                  onChange={(e) => setInitialCapital(Math.max(0, Number(e.target.value)))}
-                  className="w-28 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-initial-capital"
-                />
-                <span className="text-gray-500 text-sm">€</span>
-              </div>
-            </div>
+          {/* Capital initial */}
+          <Row icon={<PiggyBank className="h-4 w-4 text-[#0F1729]/50" />} label="Capital initial">
+            <NumInput value={initialCapital} onChange={setInitialCapital} suffix="€" testId="input-initial-capital" />
+          </Row>
 
-            {/* Monthly versement programmé */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <TrendingUp className="h-4 w-4 text-[#1e3a5f]" />
-                Versement programmé mensuel
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={monthlyVP}
-                  onChange={(e) => setMonthlyVP(Math.max(0, Number(e.target.value)))}
-                  className="w-28 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-monthly-vp"
-                />
-                <span className="text-gray-500 text-sm">€</span>
-              </div>
-            </div>
+          {/* Versement programmé */}
+          <Row icon={<TrendingUp className="h-4 w-4 text-[#0F1729]/50" />} label="Versement par occurrence">
+            <NumInput value={vpAmount} onChange={setVpAmount} suffix="€" testId="input-monthly-vp" />
+          </Row>
 
-            {/* Versement programmé recurrences per year */}
-            <div className="p-3 bg-white rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                  <RefreshCw className="h-4 w-4 text-[#1e3a5f]" />
-                  Récurrences versement programmé / an
-                </Label>
-                <span className="text-[#1e3a5f] font-bold text-sm bg-[#1e3a5f]/10 px-2 py-0.5 rounded">
-                  {vpRecurrencesPerYear}x
-                </span>
-              </div>
-              <Slider
-                min={1}
-                max={12}
-                step={1}
-                value={[vpRecurrencesPerYear]}
-                onValueChange={(val) => setVpRecurrencesPerYear(val[0])}
-                className="w-full"
-                data-testid="slider-vp-recurrences"
-              />
-              <div className="flex justify-between mt-1">
-                <span className="text-xs text-gray-400">1× (annuel)</span>
-                <span className="text-xs text-gray-400">12× (mensuel)</span>
-              </div>
-            </div>
+          {/* Fréquence VP */}
+          <Block icon={<RefreshCw className="h-4 w-4 text-[#0F1729]/50" />} label="Fréquence du versement programmé">
+            <SegBtn options={VP_FREQS} value={vpFreqPerYear as any} onChange={setVpFreqPerYear as any} />
+            {vpAmount > 0 && annualVP > 0 && (
+              <p className="text-xs text-gray-400 mt-1.5">
+                Soit <span className="text-[#0F1729] font-semibold">{fmt(annualVP)}</span> versés / an
+              </p>
+            )}
+          </Block>
 
-            {/* Investment Horizon */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <Clock className="h-4 w-4 text-[#1e3a5f]" />
-                Durée
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={years}
-                  onChange={(e) => setYears(Math.max(1, Number(e.target.value)))}
-                  className="w-20 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  data-testid="input-years"
-                />
-                <span className="text-gray-500 text-sm">ans</span>
-              </div>
-            </div>
+          {/* Durée */}
+          <Row icon={<Clock className="h-4 w-4 text-[#0F1729]/50" />} label="Durée">
+            <NumInput value={years} onChange={v => setYears(Math.max(1, v))} suffix="ans" testId="input-years" />
+          </Row>
 
-            {/* Interest Rate */}
-            <div className="flex items-center justify-between gap-3 p-3 bg-white rounded-lg border border-gray-200">
-              <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                <Percent className="h-4 w-4 text-[#1e3a5f]" />
-                Taux annuel
-              </Label>
-              <div className="flex items-center gap-1">
-                <Input
-                  type="number"
-                  value={interestRate}
-                  onChange={(e) => setInterestRate(Math.max(0, Number(e.target.value)))}
-                  className="w-20 text-right bg-gray-50 border-gray-300 text-[#1e3a5f] font-medium h-9"
-                  step="0.1"
-                  data-testid="input-interest-rate"
-                />
-                <span className="text-gray-500 text-sm">%</span>
-              </div>
-            </div>
+          {/* Taux */}
+          <Row icon={<Percent className="h-4 w-4 text-[#0F1729]/50" />} label="Taux annuel">
+            <NumInput value={interestRate} onChange={setInterestRate} suffix="%" step="0.1" testId="input-interest-rate" />
+          </Row>
 
-            {/* Interest Frequency Slider */}
-            <div className="p-3 bg-white rounded-lg border border-gray-200">
-              <div className="flex items-center justify-between gap-3 mb-2">
-                <Label className="text-[#1e3a5f] flex items-center gap-2 text-sm font-medium">
-                  <Calendar className="h-4 w-4 text-[#1e3a5f]" />
-                  Versement des intérêts
-                </Label>
-                <span className="text-[#1e3a5f] font-bold text-sm bg-[#1e3a5f]/10 px-2 py-0.5 rounded capitalize">
-                  {frequencyLabel(interestFrequencyMonths)}
-                </span>
+          {/* Capitalisation */}
+          <Block icon={<Calendar className="h-4 w-4 text-[#0F1729]/50" />} label="Versement des intérêts">
+            <SegBtn options={INTEREST_FREQS} value={interestFreqMonths as any} onChange={setInterestFreqMonths as any} />
+          </Block>
+
+          {/* ── Rachat ── */}
+          <div className={`rounded-xl border transition-all ${rachatEnabled ? "border-[#D4AF37]/40 bg-[#D4AF37]/5" : "border-dashed border-gray-200 bg-white"}`}>
+            <button
+              className="w-full flex items-center justify-between px-4 py-3 text-sm font-medium text-[#0F1729]"
+              onClick={() => setRachatEnabled(v => !v)}
+              data-testid="toggle-rachat"
+            >
+              <span className="flex items-center gap-2">
+                <Minus className="h-4 w-4 text-[#D4AF37]" />
+                Rachat programmé
+              </span>
+              <span className={`text-xs px-2 py-0.5 rounded-full font-semibold transition-colors ${
+                rachatEnabled ? "bg-[#D4AF37] text-[#0F1729]" : "bg-gray-100 text-gray-400"
+              }`}>
+                {rachatEnabled ? "Activé" : "Désactivé"}
+              </span>
+            </button>
+
+            {rachatEnabled && (
+              <div className="px-4 pb-4 space-y-3 border-t border-[#D4AF37]/20 pt-3">
+                <Row icon={null} label="Montant du rachat">
+                  <NumInput value={rachatAmount} onChange={setRachatAmount} suffix="€" testId="input-rachat-amount" />
+                </Row>
+                <Block icon={null} label="Fréquence des rachats">
+                  <SegBtn options={RACHAT_FREQS} value={rachatFreqMonths as any} onChange={setRachatFreqMonths as any} />
+                  {annualWithdrawal > 0 && (
+                    <p className="text-xs text-gray-400 mt-1.5">
+                      Soit <span className="text-[#D4AF37] font-semibold">{fmt(annualWithdrawal)}</span> retirés / an
+                    </p>
+                  )}
+                </Block>
               </div>
-              <Slider
-                min={1}
-                max={12}
-                step={1}
-                value={[interestFrequencyMonths]}
-                onValueChange={(val) => setInterestFrequencyMonths(val[0])}
-                className="w-full"
-                data-testid="slider-interest-frequency"
-              />
-              <div className="flex justify-between mt-1">
-                <span className="text-xs text-gray-400">1 mois</span>
-                <span className="text-xs text-gray-400">12 mois</span>
-              </div>
-            </div>
+            )}
           </div>
         </div>
 
-        {/* Results Section */}
-        <div className="p-5 rounded-lg bg-white border border-gray-200">
-          <div className="flex items-center justify-between gap-2 mb-4">
+        {/* ── Résultats ── */}
+        <div className="rounded-2xl border border-gray-100 bg-white p-6 flex flex-col gap-4">
+          <div className="flex items-center justify-between">
             <div className="flex items-center gap-2">
-              <div className="p-2 bg-[#1e3a5f] rounded-md">
-                <TrendingUp className="h-5 w-5 text-white" />
+              <div className="p-2 bg-[#0F1729] rounded-xl">
+                <TrendingUp className="h-4.5 w-4.5 text-white" style={{ width: "1.1rem", height: "1.1rem" }} />
               </div>
-              <h3 className="font-serif text-xl font-bold text-[#1e3a5f]">Résultats</h3>
+              <h3 className="font-serif text-lg font-bold text-[#0F1729]">Résultats</h3>
             </div>
             <Button
               size="sm"
               onClick={handleDownload}
-              className="flex items-center gap-1.5 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs h-8 shadow-sm"
+              className="bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs h-8 gap-1.5 shadow-sm"
               data-testid="button-download-result"
             >
               <Download className="h-3.5 w-3.5" />
@@ -459,148 +495,83 @@ export default function CompoundInterestCalculator() {
             </Button>
           </div>
 
-          {/* Main Result */}
-          <div className="text-center mb-4 p-4 bg-gradient-to-br from-[#1e3a5f]/5 to-[#1e3a5f]/10 rounded-lg border border-[#1e3a5f]/20">
-            <p className="text-xs text-gray-500 mb-1">Capital final estimé</p>
-            <p className="font-serif text-3xl font-bold text-[#1e3a5f]" data-testid="text-final-capital">
-              {formatCurrency(results.finalCapital)}
+          {/* Capital final */}
+          <div className="rounded-xl bg-gradient-to-br from-[#0F1729] to-[#1e3a5f] p-5 text-center">
+            <p className="text-white/50 text-xs tracking-wider uppercase mb-1">Capital final estimé</p>
+            <p className="font-serif text-4xl font-bold text-white" data-testid="text-final-capital">
+              {fmt(last.total)}
             </p>
             {multiplier > 1 && (
-              <div className="mt-2 inline-flex items-center gap-1 px-2 py-0.5 bg-[#D4AF37]/20 rounded-full">
-                <span className="text-xs font-medium text-[#1e3a5f]">×{multiplier.toFixed(1)} votre mise</span>
-              </div>
+              <span className="inline-block mt-2 text-xs font-semibold text-[#D4AF37] bg-[#D4AF37]/15 px-3 py-0.5 rounded-full">
+                × {multiplier.toFixed(1)} votre mise
+              </span>
             )}
           </div>
 
-          {/* Summary Cards */}
-          <div className="grid grid-cols-2 gap-3 mb-4">
-            <div className="text-center p-3 bg-gray-50 rounded-lg border border-gray-200">
-              <p className="text-xs text-gray-500 mb-0.5">Total versé</p>
-              <p className="font-serif text-lg font-semibold text-[#1e3a5f]" data-testid="text-total-deposits">
-                {formatCurrency(results.totalDeposits)}
-              </p>
-            </div>
-            <div className="text-center p-3 bg-green-50 rounded-lg border border-green-200">
-              <p className="text-xs text-gray-500 mb-0.5">Intérêts gagnés</p>
-              <p className="font-serif text-lg font-semibold text-green-600" data-testid="text-total-interest">
-                +{formatCurrency(results.totalInterest)}
-              </p>
-            </div>
+          {/* Stat cards */}
+          <div className={`grid gap-3 ${rachatEnabled ? "grid-cols-3" : "grid-cols-2"}`}>
+            <StatCard label="Total versé"        value={fmt(last.deposits)}                 color="navy" testId="text-total-deposits" />
+            <StatCard label="Intérêts générés"   value={`+${fmt(last.interest)}`}           color="green" testId="text-total-interest" />
+            {rachatEnabled && (
+              <StatCard label="Total retiré"     value={`-${fmt(last.totalWithdrawn)}`}     color="amber" />
+            )}
           </div>
 
           {/* Chart */}
-          <div className="mb-3 relative">
-            <p className="text-xs text-gray-500 mb-2 font-medium">Évolution du capital</p>
-            <div className="h-28 flex items-end gap-[2px] bg-gradient-to-t from-gray-100 to-gray-50 rounded p-2 relative border border-gray-200">
-              {results.yearlyData.map((data, index) => {
-                const totalHeight = maxChartValue > 0 ? (data.total / maxChartValue) * 100 : 0;
-                const depositRatio = data.total > 0 ? data.deposits / data.total : 1;
-                const interestRatio = data.total > 0 ? data.interest / data.total : 0;
-                const isHovered = hoveredBar === index;
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <p className="text-xs font-semibold text-[#0F1729]/50 uppercase tracking-wider">Évolution du capital</p>
+              <div className="flex items-center gap-3">
+                <LegendDot color="#0F1729" label="Capital versé" dashed />
+                <LegendDot color="#D4AF37" label="Intérêts" />
+              </div>
+            </div>
 
-                return (
-                  <div
-                    key={index}
-                    className="flex-1 flex flex-col justify-end relative cursor-pointer"
-                    style={{ height: '100%' }}
-                    onMouseEnter={() => setHoveredBar(index)}
-                    onMouseLeave={() => setHoveredBar(null)}
-                  >
-                    {isHovered && (
-                      <div className="absolute bottom-full left-1/2 -translate-x-1/2 mb-2 z-50 pointer-events-none">
-                        <div className="bg-white border border-[#1e3a5f]/20 rounded-lg shadow-xl px-3 py-2 min-w-[120px]">
-                          <p className="text-xs text-[#D4AF37] font-semibold mb-0.5">Année {data.year}</p>
-                          <p className="font-serif text-sm font-bold text-[#1e3a5f]">{formatCurrency(data.total)}</p>
-                          <div className="flex items-center gap-1 mt-1 text-xs">
-                            <span className="text-gray-500">Capital:</span>
-                            <span className="text-[#1e3a5f] font-medium">{formatCurrency(data.deposits)}</span>
-                          </div>
-                          <div className="flex items-center gap-1 text-xs">
-                            <span className="text-gray-500">Intérêts:</span>
-                            <span className="text-green-600 font-medium">{formatCurrency(data.interest)}</span>
-                          </div>
-                        </div>
-                      </div>
-                    )}
-                    <div
-                      className={`w-full flex flex-col transition-all duration-150 ${isHovered ? 'opacity-100 scale-105' : 'opacity-90'}`}
-                      style={{ height: `${totalHeight}%`, minHeight: totalHeight > 0 ? '2px' : '0' }}
-                    >
-                      <div
-                        className="w-full bg-green-500 rounded-t-sm"
-                        style={{ flex: interestRatio }}
-                      />
-                      <div
-                        className="w-full bg-[#1e3a5f]"
-                        style={{ flex: depositRatio }}
-                      />
-                    </div>
-                  </div>
-                );
-              })}
+            <div className="rounded-xl border border-gray-100 overflow-hidden bg-[#FAFAF9]">
+              <AreaChart data={yearlyData} hoveredIdx={hoveredIdx} onHover={setHoveredIdx} />
             </div>
-            <div className="relative h-5 mt-1">
-              {getXAxisLabels().map((label, idx) => (
-                <span
-                  key={idx}
-                  className="absolute text-xs text-gray-500 -translate-x-1/2"
-                  style={{ left: `${label.position}%` }}
-                >
-                  {label.year}a
-                </span>
-              ))}
-            </div>
-          </div>
 
-          {/* Legend */}
-          <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-            <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-[#1e3a5f] rounded-sm" />
-              <span>Capital</span>
-            </div>
-            <div className="flex items-center gap-1">
-              <div className="w-2.5 h-2.5 bg-green-500 rounded-sm" />
-              <span>Intérêts</span>
-            </div>
-          </div>
-
-          {/* Info note */}
-          <div className="mt-3 p-2 bg-gray-50 rounded-lg flex items-start gap-2 border border-gray-200">
-            <Info className="h-3.5 w-3.5 text-[#1e3a5f] flex-shrink-0 mt-0.5" />
-            <p className="text-xs text-gray-600">
-              Survolez les barres pour le détail année par année
-            </p>
+            {/* Hover tooltip (shown below chart) */}
+            {hoveredIdx !== null && yearlyData[hoveredIdx] && (
+              <div className="mt-2 flex items-center gap-4 px-3 py-2 rounded-lg bg-[#0F1729] text-white text-xs animate-in fade-in">
+                <span className="text-[#D4AF37] font-semibold">An {yearlyData[hoveredIdx].year}</span>
+                <span className="text-white/60">Capital&nbsp;<span className="text-white font-semibold">{fmt(yearlyData[hoveredIdx].total)}</span></span>
+                <span className="text-white/60">Versé&nbsp;<span className="text-white font-semibold">{fmt(yearlyData[hoveredIdx].deposits)}</span></span>
+                <span className="text-white/60">Intérêts&nbsp;<span className="text-[#D4AF37] font-semibold">+{fmt(yearlyData[hoveredIdx].interest)}</span></span>
+                {rachatEnabled && <span className="text-white/60">Rachats&nbsp;<span className="text-red-300 font-semibold">-{fmt(yearlyData[hoveredIdx].totalWithdrawn)}</span></span>}
+              </div>
+            )}
+            {hoveredIdx === null && (
+              <p className="mt-1.5 text-xs text-gray-400 flex items-center gap-1">
+                <Info className="h-3 w-3" />
+                Survolez le graphique pour voir le détail annuel
+              </p>
+            )}
           </div>
         </div>
       </div>
 
-      {/* Amortization Table */}
-      <div className="mt-6 rounded-xl border border-[#D4AF37]/30 overflow-hidden shadow-sm bg-white">
-        <div className="flex items-center justify-between px-5 py-4 border-b border-[#D4AF37]/20 bg-gradient-to-r from-white to-[#D4AF37]/5">
+      {/* ── Tableau d'amortissement ── */}
+      <div className="mt-6 rounded-2xl border border-gray-100 overflow-hidden bg-white">
+        <div className="flex items-center justify-between px-5 py-4 border-b border-gray-100">
           <div className="flex items-center gap-3">
-            <div className="p-1.5 bg-[#D4AF37]/15 rounded-lg">
+            <div className="p-1.5 bg-[#D4AF37]/10 rounded-lg">
               <TableIcon className="h-4 w-4 text-[#D4AF37]" />
             </div>
             <div>
-              <h4 className="font-serif font-semibold text-[#1e3a5f] text-sm">Tableau d'amortissement</h4>
-              <p className="text-[10px] text-gray-400">Progression du capital année par année</p>
+              <h4 className="font-serif font-semibold text-[#0F1729] text-sm">Tableau d'amortissement</h4>
+              <p className="text-[10px] text-gray-400">Progression année par année</p>
             </div>
           </div>
-          <div className="flex items-center gap-3">
-            <Button
-              size="sm"
-              onClick={handleExportCSV}
-              className="flex items-center gap-1.5 bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs h-7 px-3 shadow-sm"
-              data-testid="button-export-csv"
-            >
-              <Download className="h-3 w-3" />
-              Exporter CSV
+          <div className="flex items-center gap-2">
+            <Button size="sm" onClick={handleExportCSV}
+              className="bg-[#D4AF37] hover:bg-[#C9A431] text-[#0F1729] font-semibold text-xs h-7 px-3 gap-1"
+              data-testid="button-export-csv">
+              <Download className="h-3 w-3" />Exporter CSV
             </Button>
-            <button
-              onClick={() => setShowTable((v) => !v)}
-              className="flex items-center gap-1.5 text-[#1e3a5f]/60 hover:text-[#1e3a5f] text-xs font-medium transition-colors border border-gray-200 rounded-lg px-2.5 py-1.5 hover:border-[#1e3a5f]/30 bg-white"
-              data-testid="button-toggle-table"
-            >
+            <button onClick={() => setShowTable(v => !v)}
+              className="flex items-center gap-1 text-[#0F1729]/50 hover:text-[#0F1729] text-xs font-medium border border-gray-200 rounded-lg px-2.5 py-1.5 transition-colors"
+              data-testid="button-toggle-table">
               {showTable ? <ChevronUp className="h-3.5 w-3.5" /> : <ChevronDown className="h-3.5 w-3.5" />}
               {showTable ? "Réduire" : "Afficher"}
             </button>
@@ -608,52 +579,29 @@ export default function CompoundInterestCalculator() {
         </div>
 
         {showTable && (
-          <div className="overflow-x-auto max-h-80 overflow-y-auto">
+          <div className="overflow-x-auto max-h-72 overflow-y-auto">
             <table className="w-full text-xs">
-              <thead className="sticky top-0 bg-gray-50 border-b border-gray-200">
+              <thead className="sticky top-0 bg-gray-50 border-b border-gray-100">
                 <tr>
-                  <th className="text-left px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">Année</th>
-                  <th className="text-right px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">Versements<br/><span className="text-gray-400 font-normal">de l'année</span></th>
-                  <th className="text-right px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">Capital versé<br/><span className="text-gray-400 font-normal">cumulé</span></th>
-                  <th className="text-right px-3 py-2.5 font-semibold text-green-700 whitespace-nowrap">Intérêts<br/><span className="text-gray-400 font-normal">de l'année</span></th>
-                  <th className="text-right px-3 py-2.5 font-semibold text-green-700 whitespace-nowrap">Intérêts<br/><span className="text-gray-400 font-normal">cumulés</span></th>
-                  <th className="text-right px-3 py-2.5 font-semibold text-[#1e3a5f] whitespace-nowrap">Capital total</th>
+                  <th className="text-left px-4 py-2.5 font-semibold text-[#0F1729]">Année</th>
+                  <th className="text-right px-4 py-2.5 font-semibold text-[#0F1729]">Capital versé</th>
+                  <th className="text-right px-4 py-2.5 font-semibold text-emerald-700">Intérêts cumulés</th>
+                  {rachatEnabled && <th className="text-right px-4 py-2.5 font-semibold text-amber-600">Rachats cumulés</th>}
+                  <th className="text-right px-4 py-2.5 font-semibold text-[#0F1729]">Capital net</th>
                 </tr>
               </thead>
               <tbody>
-                {results.yearlyData.map((d, i) => {
-                  const annualVP = monthlyVP * vpRecurrencesPerYear;
-                  const prevTotal = i > 0 ? results.yearlyData[i - 1].total : initialCapital;
-                  const depositsThisYear = i === 0 ? 0 : annualVP;
-                  const interestThisYear = d.total - prevTotal - depositsThisYear;
-                  const isEven = i % 2 === 0;
-                  return (
-                    <tr
-                      key={d.year}
-                      className={`border-b border-gray-100 hover:bg-[#D4AF37]/5 transition-colors ${isEven ? "bg-white" : "bg-gray-50/50"}`}
-                      data-testid={`row-amortization-${d.year}`}
-                    >
-                      <td className="px-3 py-2 font-semibold text-[#1e3a5f]">
-                        Année {d.year}
-                      </td>
-                      <td className="px-3 py-2 text-right text-gray-600">
-                        {i === 0 ? "—" : formatCurrency(depositsThisYear)}
-                      </td>
-                      <td className="px-3 py-2 text-right text-[#1e3a5f] font-medium">
-                        {formatCurrency(d.deposits)}
-                      </td>
-                      <td className="px-3 py-2 text-right text-green-600 font-medium">
-                        +{formatCurrency(Math.max(0, interestThisYear))}
-                      </td>
-                      <td className="px-3 py-2 text-right text-green-700 font-semibold">
-                        +{formatCurrency(d.interest)}
-                      </td>
-                      <td className="px-3 py-2 text-right font-bold text-[#1e3a5f]">
-                        {formatCurrency(d.total)}
-                      </td>
-                    </tr>
-                  );
-                })}
+                {yearlyData.map((d, i) => (
+                  <tr key={d.year}
+                    className={`border-b border-gray-50 hover:bg-[#D4AF37]/5 transition-colors ${i % 2 === 0 ? "bg-white" : "bg-gray-50/40"}`}
+                    data-testid={`row-amortization-${d.year}`}>
+                    <td className="px-4 py-2 font-semibold text-[#0F1729]">An {d.year}</td>
+                    <td className="px-4 py-2 text-right text-gray-600">{fmt(d.deposits)}</td>
+                    <td className="px-4 py-2 text-right text-emerald-600 font-medium">+{fmt(d.interest)}</td>
+                    {rachatEnabled && <td className="px-4 py-2 text-right text-amber-600 font-medium">-{fmt(d.totalWithdrawn)}</td>}
+                    <td className="px-4 py-2 text-right font-bold text-[#0F1729]">{fmt(d.total)}</td>
+                  </tr>
+                ))}
               </tbody>
             </table>
           </div>
@@ -661,11 +609,82 @@ export default function CompoundInterestCalculator() {
       </div>
 
       {/* Disclaimer */}
-      <div className="mt-4 p-3 bg-gray-100 rounded-lg border border-gray-200">
-        <p className="text-xs text-gray-500 text-center" data-testid="text-disclaimer">
-          Simulation indicative basée sur une capitalisation {frequencyLabel(interestFrequencyMonths)}. Les performances passées ne préjugent pas des performances futures.
-        </p>
-      </div>
+      <p className="mt-4 text-xs text-gray-400 text-center" data-testid="text-disclaimer">
+        Simulation indicative. Capitalisation {frequencyLabel(interestFreqMonths)}. Les performances passées ne préjugent pas des performances futures.
+      </p>
     </div>
+  );
+}
+
+/* ─── Sub-components ─────────────────────────────────── */
+function Row({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <div className="flex items-center justify-between gap-3 bg-white rounded-xl border border-gray-100 px-3 py-2.5">
+      <span className="flex items-center gap-2 text-sm font-medium text-[#0F1729]/70">
+        {icon}
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function Block({ icon, label, children }: { icon: React.ReactNode; label: string; children: React.ReactNode }) {
+  return (
+    <div className="bg-white rounded-xl border border-gray-100 px-3 py-2.5">
+      <span className="flex items-center gap-2 text-sm font-medium text-[#0F1729]/70 mb-2">
+        {icon}
+        {label}
+      </span>
+      {children}
+    </div>
+  );
+}
+
+function NumInput({ value, onChange, suffix, step, testId }: {
+  value: number; onChange: (v: number) => void; suffix: string; step?: string; testId?: string;
+}) {
+  return (
+    <div className="flex items-center gap-1">
+      <input
+        type="number"
+        value={value}
+        onChange={e => onChange(Math.max(0, Number(e.target.value)))}
+        step={step}
+        className="w-24 text-right bg-gray-50 border border-gray-200 rounded-lg text-[#0F1729] font-semibold text-sm h-8 px-2 focus:outline-none focus:border-[#D4AF37]"
+        data-testid={testId}
+      />
+      <span className="text-gray-400 text-sm">{suffix}</span>
+    </div>
+  );
+}
+
+function StatCard({ label, value, color, testId }: { label: string; value: string; color: "navy"|"green"|"amber"; testId?: string }) {
+  const colors = {
+    navy:  "bg-[#0F1729]/5  border-[#0F1729]/10 text-[#0F1729]",
+    green: "bg-emerald-50   border-emerald-100   text-emerald-700",
+    amber: "bg-amber-50     border-amber-100     text-amber-600",
+  };
+  return (
+    <div className={`rounded-xl border p-3 text-center ${colors[color]}`}>
+      <p className="text-xs text-gray-400 mb-0.5">{label}</p>
+      <p className={`font-serif text-base font-semibold ${colors[color].split(" ")[2]}`} data-testid={testId}>
+        {value}
+      </p>
+    </div>
+  );
+}
+
+function LegendDot({ color, label, dashed }: { color: string; label: string; dashed?: boolean }) {
+  return (
+    <span className="flex items-center gap-1.5 text-xs text-gray-400">
+      <span className="inline-flex items-center" style={{ width: 16 }}>
+        {dashed
+          ? <svg width="16" height="2"><line x1="0" y1="1" x2="16" y2="1" stroke={color} strokeWidth="2" strokeDasharray="3 2"/></svg>
+          : <svg width="16" height="2"><line x1="0" y1="1" x2="16" y2="1" stroke={color} strokeWidth="2"/></svg>
+        }
+      </span>
+      {label}
+    </span>
   );
 }
