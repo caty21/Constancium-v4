@@ -20,11 +20,11 @@ interface YearlyData {
 
 /* ─── Constants ─────────────────────────────────────── */
 const VP_FREQS = [
-  { label: "Annuel",      value: 1  },
-  { label: "Semestriel",  value: 2  },
-  { label: "Trimestriel", value: 4  },
-  { label: "Bimestriel",  value: 6  },
   { label: "Mensuel",     value: 12 },
+  { label: "Bimestriel",  value: 6  },
+  { label: "Trimestriel", value: 4  },
+  { label: "Semestriel",  value: 2  },
+  { label: "Annuel",      value: 1  },
 ];
 
 const INTEREST_FREQS = [
