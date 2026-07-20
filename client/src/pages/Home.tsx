@@ -74,29 +74,19 @@ export default function Home() {
               <ServiceModule key={index} {...service} index={index} />
             ))}
           </div>
-        </div>
-      </section>
 
-      {/* ── Expertise strip — dark with gold accents ── */}
-      <section className="bg-[#0F1729] py-16 md:py-20 relative overflow-hidden">
-        {/* Subtle decorative background */}
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "repeating-linear-gradient(45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)",
-          backgroundSize: "24px 24px"
-        }} />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8">
-          <div className="grid md:grid-cols-3 gap-px bg-white/5">
+          {/* Expertise pillars — intégrés dans la même section */}
+          <div className="grid md:grid-cols-3 gap-6 mt-12 pt-10 border-t border-[#E8E5DC]">
             {expertises.map((item, i) => {
               const ItemIcon = item.icon;
               return (
-                <div key={i} className="flex items-start gap-5 px-8 py-10 bg-[#0F1729]">
-                  <div className="w-11 h-11 rounded-xl bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 border border-[#D4AF37]/20 flex items-center justify-center flex-shrink-0">
-                    <ItemIcon className="h-5 w-5 text-[#D4AF37]" />
+                <div key={i} className="flex items-start gap-4">
+                  <div className="w-10 h-10 rounded-lg bg-[#0F1729] flex items-center justify-center flex-shrink-0">
+                    <ItemIcon className="h-4.5 w-4.5 text-[#D4AF37]" style={{ width: "1.125rem", height: "1.125rem" }} />
                   </div>
                   <div>
-                    <h3 className="font-serif text-lg font-bold text-white mb-1.5">{item.label}</h3>
-                    <div className="h-px w-6 bg-[#D4AF37]/40 mb-2.5" />
-                    <p className="text-white/50 text-sm leading-relaxed">{item.desc}</p>
+                    <h3 className="font-semibold text-[#0F1729] text-sm mb-1">{item.label}</h3>
+                    <p className="text-gray-400 text-sm leading-relaxed">{item.desc}</p>
                   </div>
                 </div>
               );
