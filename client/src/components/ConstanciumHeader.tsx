@@ -27,7 +27,6 @@ export default function ConstanciumHeader() {
     { label: "Gamme", href: "/gamme", submenuType: "gamme" },
     { label: "Simulateurs", href: "/simulateur", submenuType: "simulateur" },
     { label: "À Propos", href: "/about" },
-    { label: "Contact", href: "/contact" },
   ];
 
   const scrolled = isScrolled;
