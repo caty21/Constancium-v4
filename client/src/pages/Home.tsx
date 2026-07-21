@@ -47,7 +47,7 @@ export default function Home() {
       <ConstanciumHero />
 
       {/* ── Services — light section ── */}
-      <section id="services" className="bg-[#F7F6F2] py-20 md:py-28 scroll-mt-24">
+      <section id="services" className="bg-[#F7F6F2] py-20 md:py-28 scroll-mt-[40px]">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
           {/* Section header */}
           <div className="flex flex-col md:flex-row md:items-end justify-between gap-6 mb-14">

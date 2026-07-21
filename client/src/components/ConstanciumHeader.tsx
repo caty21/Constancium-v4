@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Menu, X, ChevronDown, ChevronRight, TrendingUp, Calculator, Landmark, Phone, Mail } from "lucide-react";
 import { Link } from "wouter";
@@ -6,15 +6,8 @@ import logoImage from "@assets/Capture_d_écran_2025-10-19_194027-removebg-previ
 import { gammeCategories } from "@/constants/gamme";
 
 export default function ConstanciumHeader() {
-  const [isScrolled, setIsScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
   const [hoveredCategory, setHoveredCategory] = useState<number | null>(null);
-
-  useEffect(() => {
-    const handleScroll = () => setIsScrolled(window.scrollY > 60);
-    window.addEventListener("scroll", handleScroll);
-    return () => window.removeEventListener("scroll", handleScroll);
-  }, []);
 
   const simulatorSubmenu = [
     { label: "Intérêts composés", href: "/simulateur#interets-composes", icon: TrendingUp, description: "Calculez la croissance de votre capital" },
@@ -29,12 +22,10 @@ export default function ConstanciumHeader() {
     { label: "À Propos", href: "/about" },
   ];
 
-  const scrolled = isScrolled;
-
   return (
     <header className="fixed top-0 w-full z-50">
       {/* Top info bar */}
-      <div className={`border-b transition-colors duration-300 hidden md:block ${scrolled ? "bg-[#0F1729] border-[#D4AF37]/20" : "bg-[#0a1020]/80 border-white/5"}`}>
+      <div className="border-b border-white/5 hidden md:block bg-[#0a1020]/80">
         <div className="max-w-7xl mx-auto px-6 md:px-8 h-9 flex items-center justify-between">
           <p className="text-white/40 text-xs tracking-widest uppercase font-light">
             Constancium Patrimoine & Capital — Conseil Indépendant en Gestion de Patrimoine
@@ -54,11 +45,7 @@ export default function ConstanciumHeader() {
       </div>
 
       {/* Main nav */}
-      <div className={`transition-all duration-300 ${
-        scrolled
-          ? "bg-[#0F1729] border-b border-[#D4AF37]/15 shadow-xl"
-          : "bg-[#0F1729]/70 backdrop-blur-md"
-      }`}>
+      <div className="bg-[#0F1729]/70 backdrop-blur-md">
         <div className="max-w-7xl mx-auto px-6 md:px-8">
           <div className="flex items-center justify-between h-[70px]">
             <Link href="/">
