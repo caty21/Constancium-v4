@@ -118,11 +118,7 @@ export default function About() {
       </section>
 
       {/* Values section */}
-      <section className="bg-[#0F1729] py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "repeating-linear-gradient(45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)",
-          backgroundSize: "24px 24px"
-        }} />
+      <section className="bg-[#F7F6F2] py-20 md:py-28 relative overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-6 md:px-8">
           <div className="text-center mb-14">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -132,29 +128,29 @@ export default function About() {
               </span>
               <div className="h-px w-8 bg-[#D4AF37]" />
             </div>
-            <h3 className="font-serif text-4xl md:text-5xl font-bold text-white" data-testid="text-values-title">
+            <h3 className="font-serif text-4xl md:text-5xl font-bold text-[#0F1729]" data-testid="text-values-title">
               Nos Valeurs
             </h3>
           </div>
 
-          <div className="grid md:grid-cols-3 gap-px bg-white/5">
+          <div className="grid md:grid-cols-3 gap-px bg-[#E8E5DC]">
             {values.map((value, index) => {
               const ValueIcon = value.icon;
               return (
                 <div
                   key={index}
-                  className="bg-[#0F1729] p-10 hover:bg-white/[0.03] transition-all duration-300 group"
+                  className="bg-white p-10 hover:bg-[#FAFAF9] transition-all duration-300 group"
                   data-testid={`value-card-${index}`}
                 >
                   <div className="w-12 h-12 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-xl flex items-center justify-center mb-5 group-hover:border-[#D4AF37]/40 transition-colors">
                     <ValueIcon className="h-5 w-5 text-[#D4AF37]" />
                   </div>
-                  <span className="text-[#D4AF37]/30 text-xs font-mono tracking-widest">0{index + 1}</span>
-                  <h4 className="font-serif text-2xl font-bold text-white mt-1 mb-3" data-testid="text-value-title">
+                  <span className="text-[#D4AF37]/50 text-xs font-mono tracking-widest">0{index + 1}</span>
+                  <h4 className="font-serif text-2xl font-bold text-[#0F1729] mt-1 mb-3" data-testid="text-value-title">
                     {value.title}
                   </h4>
                   <div className="w-8 h-px bg-[#D4AF37]/40 mb-4 group-hover:w-14 group-hover:bg-[#D4AF37]/70 transition-all duration-300" />
-                  <p className="text-white/55 leading-relaxed text-sm" data-testid="text-value-description">
+                  <p className="text-gray-400 leading-relaxed text-sm" data-testid="text-value-description">
                     {value.description}
                   </p>
                 </div>

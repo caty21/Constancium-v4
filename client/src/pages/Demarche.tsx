@@ -116,12 +116,8 @@ export default function Demarche() {
         </div>
       </section>
 
-      {/* Process steps — dark */}
-      <section className="bg-[#0F1729] py-20 md:py-28 relative overflow-hidden">
-        <div className="absolute inset-0 opacity-[0.03]" style={{
-          backgroundImage: "repeating-linear-gradient(45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)",
-          backgroundSize: "24px 24px"
-        }} />
+      {/* Process steps */}
+      <section className="bg-[#F7F6F2] py-20 md:py-28 relative overflow-hidden">
         <div className="relative max-w-7xl mx-auto px-6 md:px-8">
           <div className="text-center mb-14">
             <div className="flex items-center justify-center gap-3 mb-4">
@@ -129,29 +125,29 @@ export default function Demarche() {
               <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase">Le processus</span>
               <div className="h-px w-8 bg-[#D4AF37]" />
             </div>
-            <h2 className="font-serif text-3xl md:text-4xl font-bold text-white">
+            <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#0F1729]">
               Notre processus en 4 étapes
             </h2>
           </div>
 
-          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-white/5">
+          <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-px bg-[#E8E5DC]">
             {steps.map((step, index) => {
               const StepIcon = step.icon;
               return (
                 <div
                   key={index}
-                  className="relative bg-[#0F1729] p-8 hover:bg-white/[0.03] transition-all duration-300 group"
+                  className="relative bg-white p-8 hover:bg-[#FAFAF9] transition-all duration-300 group"
                   data-testid={`step-card-${index}`}
                 >
-                  <span className="font-serif text-5xl font-bold text-[#D4AF37]/15 group-hover:text-[#D4AF37]/30 transition-colors leading-none block mb-5 select-none">
+                  <span className="font-serif text-5xl font-bold text-[#D4AF37]/25 group-hover:text-[#D4AF37]/50 transition-colors leading-none block mb-5 select-none">
                     {step.num}
                   </span>
                   <div className="w-11 h-11 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 border border-[#D4AF37]/20 rounded-xl flex items-center justify-center mb-5 group-hover:border-[#D4AF37]/40 transition-colors">
                     <StepIcon className="h-5 w-5 text-[#D4AF37]" />
                   </div>
                   <div className="w-6 h-px bg-[#D4AF37]/40 mb-4 group-hover:w-10 group-hover:bg-[#D4AF37]/70 transition-all duration-300" />
-                  <h3 className="font-serif text-lg font-bold text-white mb-3">{step.title}</h3>
-                  <p className="text-white/50 text-sm leading-relaxed">{step.description}</p>
+                  <h3 className="font-serif text-lg font-bold text-[#0F1729] mb-3">{step.title}</h3>
+                  <p className="text-gray-400 text-sm leading-relaxed">{step.description}</p>
                 </div>
               );
             })}
