@@ -59,6 +59,20 @@ const PAD = { top: 12, right: 16, bottom: 30, left: 62 };
 const IW = CW - PAD.left - PAD.right;
 const IH = CH - PAD.top - PAD.bottom;
 
+/* Position (en %) du point "total" pour un index donné, utilisé pour ancrer l'infobulle flottante */
+function pointPercent(data: YearlyData[], idx: number) {
+  const maxVal = data.length > 0 ? data[data.length - 1].total : 1;
+  const xOf = (i: number) => PAD.left + (i / (data.length - 1 || 1)) * IW;
+  const yOf = (v: number) => PAD.top + IH - (v / maxVal) * IH;
+  return { xPct: (xOf(idx) / CW) * 100, yPct: (yOf(data[idx].total) / CH) * 100 };
+}
+
+const yearLabel = (year: number) => {
+  if (year === 0) return "Aujourd'hui";
+  if (year === 1) return "Dans 1 an";
+  return `Dans ${year} ans`;
+};
+
 function AreaChart({ data, hoveredIdx, onHover }: {
   data: YearlyData[];
   hoveredIdx: number | null;
@@ -72,8 +86,8 @@ function AreaChart({ data, hoveredIdx, onHover }: {
   // Y-axis ticks
   const yTicks = [0, 0.25, 0.5, 0.75, 1].map(r => ({ r, val: maxVal * r }));
 
-  // X-axis ticks
-  const xTicks: number[] = [];
+  // X-axis ticks (année 0 "Aujourd'hui" toujours affichée)
+  const xTicks: number[] = [0];
   const step = data.length <= 10 ? 1 : data.length <= 20 ? 5 : 10;
   for (let i = step; i <= data.length; i += step) xTicks.push(i - 1);
   if (xTicks[xTicks.length - 1] !== data.length - 1) xTicks.push(data.length - 1);
@@ -145,7 +159,7 @@ function AreaChart({ data, hoveredIdx, onHover }: {
           textAnchor="middle" fontSize={9.5}
           fill="#9CA3AF" fontFamily="Inter, sans-serif"
         >
-          {data[i].year}a
+          {data[i].year === 0 ? "Auj." : `${data[i].year}a`}
         </text>
       ))}
 
@@ -234,7 +248,7 @@ export default function CompoundInterestCalculator() {
   const [vpFreqPerYear, setVpFreqPerYear]            = useState<number>(12);
   const [years, setYears]                            = useState(20);
   const [interestRate, setInterestRate]              = useState(7);
-  const [interestFreqMonths, setInterestFreqMonths] = useState<number>(12);
+  const [interestFreqMonths, setInterestFreqMonths] = useState<number>(1);
   const [vpEnabled, setVpEnabled]                    = useState(false);
   const [rachatEnabled, setRachatEnabled]            = useState(false);
   const [rachatAmount, setRachatAmount]              = useState(200);
@@ -256,15 +270,18 @@ export default function CompoundInterestCalculator() {
     const yearlyData: YearlyData[] = [];
 
     for (let m = 1; m <= totalMonths; m++) {
-      // VP deposit (démarre à partir de l'an 2)
-      const effectiveVp = vpEnabled ? vpAmount : 0;
-      if (effectiveVp > 0 && m > 12 && m % vpIntervalMonths === 0) {
-        balance        += effectiveVp;
-        totalDeposited += effectiveVp;
-      }
-      // Interest compounding
+      // Interest compounding (calculé sur le solde avant le versement du mois :
+      // un versement ne produit des intérêts qu'à partir de la période suivante,
+      // convention standard des calculateurs d'intérêts composés)
       if (m % interestFreqMonths === 0) {
         balance *= (1 + ratePerPeriod);
+      }
+      // VP deposit (dès la première année : on ne connaît pas le mois exact
+      // d'investissement dans l'année, donc on l'intègre dès le premier versement)
+      const effectiveVp = vpEnabled ? vpAmount : 0;
+      if (effectiveVp > 0 && m % vpIntervalMonths === 0) {
+        balance        += effectiveVp;
+        totalDeposited += effectiveVp;
       }
       // Rachat (withdrawal)
       if (rachatEnabled && rachatAmount > 0 && m % rachatFreqMonths === 0) {
@@ -290,10 +307,17 @@ export default function CompoundInterestCalculator() {
       total: initialCapital, totalWithdrawn: 0
     };
 
-    return { yearlyData, last };
+    // Point "Aujourd'hui" (année 0) pour le graphique uniquement — le tableau
+    // d'amortissement et l'export CSV n'affichent que les années 1..N.
+    const chartData: YearlyData[] = [
+      { year: 0, deposits: initialCapital, interest: 0, total: initialCapital, totalWithdrawn: 0 },
+      ...yearlyData,
+    ];
+
+    return { yearlyData, chartData, last };
   }, [initialCapital, vpAmount, vpFreqPerYear, years, interestRate, interestFreqMonths, rachatEnabled, rachatAmount, rachatFreqMonths]);
 
-  const { yearlyData, last } = results;
+  const { yearlyData, chartData, last } = results;
   const multiplier = last.deposits > 0 ? last.total / last.deposits : 1;
   const annualVP   = vpAmount * vpFreqPerYear;
   const annualWithdrawal = rachatEnabled ? rachatAmount * (12 / rachatFreqMonths) : 0;
@@ -549,20 +573,52 @@ export default function CompoundInterestCalculator() {
               </div>
             </div>
 
-            <div className="rounded-xl border border-gray-100 overflow-hidden bg-[#FAFAF9]">
-              <AreaChart data={yearlyData} hoveredIdx={hoveredIdx} onHover={setHoveredIdx} />
-            </div>
-
-            {/* Hover tooltip (shown below chart) */}
-            {hoveredIdx !== null && yearlyData[hoveredIdx] && (
-              <div className="mt-2 flex items-center gap-4 px-3 py-2 rounded-lg bg-[#0F1729] text-white text-xs animate-in fade-in">
-                <span className="text-[#D4AF37] font-semibold">An {yearlyData[hoveredIdx].year}</span>
-                <span className="text-white/60">Capital&nbsp;<span className="text-white font-semibold">{fmt(yearlyData[hoveredIdx].total)}</span></span>
-                <span className="text-white/60">Versé&nbsp;<span className="text-white font-semibold">{fmt(yearlyData[hoveredIdx].deposits)}</span></span>
-                <span className="text-white/60">Intérêts&nbsp;<span className="text-[#D4AF37] font-semibold">+{fmt(yearlyData[hoveredIdx].interest)}</span></span>
-                {rachatEnabled && <span className="text-white/60">Rachats&nbsp;<span className="text-red-300 font-semibold">-{fmt(yearlyData[hoveredIdx].totalWithdrawn)}</span></span>}
+            <div className="relative">
+              <div className="rounded-xl border border-gray-100 overflow-hidden bg-[#FAFAF9]">
+                <AreaChart data={chartData} hoveredIdx={hoveredIdx} onHover={setHoveredIdx} />
               </div>
-            )}
+
+              {/* Infobulle flottante ancrée sur le point survolé */}
+              {hoveredIdx !== null && chartData[hoveredIdx] && (() => {
+                const d = chartData[hoveredIdx];
+                const { xPct, yPct } = pointPercent(chartData, hoveredIdx);
+                const nearRight = xPct > 65;
+                const nearTop = yPct < 25;
+                return (
+                  <div
+                    className="absolute z-10 w-44 rounded-xl bg-[#0F1729] text-white shadow-xl px-3.5 py-3 pointer-events-none animate-in fade-in"
+                    style={{
+                      left: `${xPct}%`,
+                      top: `${yPct}%`,
+                      transform: `translate(${nearRight ? "-104%" : "4%"}, ${nearTop ? "10%" : "-108%"})`,
+                    }}
+                  >
+                    <p className="text-[10px] text-white/50 uppercase tracking-wide">{yearLabel(d.year)}</p>
+                    <p className="font-serif text-xl font-bold mt-0.5">{fmt(d.total)}</p>
+                    <div className="mt-2 pt-2 border-t border-white/10 space-y-1">
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-1.5 text-white/60">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#D4AF37]" />Intérêts
+                        </span>
+                        <span className="font-semibold">{fmt(d.interest)}</span>
+                      </div>
+                      <div className="flex items-center justify-between text-xs">
+                        <span className="flex items-center gap-1.5 text-white/60">
+                          <span className="h-1.5 w-1.5 rounded-full bg-[#0F1729] ring-1 ring-white/40" />Versé
+                        </span>
+                        <span className="font-semibold">{fmt(d.deposits)}</span>
+                      </div>
+                      {rachatEnabled && d.totalWithdrawn > 0 && (
+                        <div className="flex items-center justify-between text-xs">
+                          <span className="text-white/60">Rachats</span>
+                          <span className="font-semibold text-red-300">-{fmt(d.totalWithdrawn)}</span>
+                        </div>
+                      )}
+                    </div>
+                  </div>
+                );
+              })()}
+            </div>
             {hoveredIdx === null && (
               <p className="mt-1.5 text-xs text-gray-400 flex items-center gap-1">
                 <Info className="h-3 w-3" />
