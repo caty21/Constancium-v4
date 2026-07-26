@@ -46,7 +46,7 @@ export default function LitteratureJuridique() {
             <section>
               <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">Assurance Constancium</h2>
               <p className="leading-relaxed">
-                <strong>Assurance Responsabilité Civile Professionnelle auprès de AON - Zurich Insurance n° 7400023129</strong>
+                Assurance Responsabilité Civile Professionnelle auprès de AON - <strong>Zurich Insurance n° 7400023129</strong>
               </p>
             </section>
 
