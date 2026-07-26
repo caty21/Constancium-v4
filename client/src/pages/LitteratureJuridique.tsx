@@ -24,7 +24,7 @@ export default function LitteratureJuridique() {
               <ul className="mt-3 space-y-2 pl-4 border-l-2 border-[#D4AF37]/30">
                 <li className="leading-relaxed">— <strong>Intermédiaire en assurance</strong> en qualité de courtier adhérent de l'ANACOFI – association agréée par l'Autorité des Marchés Financiers. Ne peut directement recevoir aucun fonds, effet, ou valeur.</li>
                 <li className="leading-relaxed">— <strong>Mandataire d'intermédiaires en opérations de banque et en services de paiement (MIOBSP)</strong></li>
-                <li className="leading-relaxed">— <strong>Agent lié (ALPSI — Agent Lié Prestataire de Services d'Investissement)</strong></li>
+                <li className="leading-relaxed">— <strong>Agent Lié Prestataire de Services d'Investissement</strong></li>
               </ul>
               <p className="leading-relaxed mt-4">
                 <strong>Carte professionnelle Transactions Immobilières :</strong><br />
