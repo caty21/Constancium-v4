@@ -32,7 +32,11 @@ export default function ConstanciumHero() {
               filter: "brightness(1.28) saturate(1.08)",
             }}
           />
-          <div className="absolute inset-0 bg-gradient-to-br from-white/30 via-white/5 to-[#0F1729]/10" />
+          {/* Voile bleu nuit repris du traitement de la capture d'origine :
+              il donne de la profondeur à la photo sans assombrir le reste du hero. */}
+          <div className="absolute inset-0 bg-[#0F1729]/32" />
+          <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/48 via-[#0F1729]/24 to-[#0F1729]/38" />
+          <div className="absolute inset-0 bg-gradient-to-b from-[#0F1729]/20 via-transparent to-[#0F1729]/42" />
           <div className="absolute left-8 top-8 h-16 w-px bg-[#D4AF37]" />
           <div className="absolute left-12 top-8 text-[#F7F6F2]">
             <p className="text-[10px] tracking-[0.28em] uppercase opacity-75">Constancium</p>
