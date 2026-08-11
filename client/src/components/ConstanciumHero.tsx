@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowRight, ArrowDown } from "lucide-react";
-import heroImage from "@assets/generated_images/luxury_city_skyline_hero.webp";
+import heroImage from "@assets/image_1786469758619.png";
 
 export default function ConstanciumHero() {
   const [visible, setVisible] = useState(false);
@@ -20,54 +20,69 @@ export default function ConstanciumHero() {
       {/* Panneau de lecture : le texte garde son contraste sans assombrir toute la page */}
       <div className="absolute inset-y-0 left-0 w-full lg:w-[53%] bg-[#0F1729]" />
 
-      {/* Mosaïque éditoriale : chaque carreau contient soit une respiration claire,
-          soit un fragment cadré de la ville. */}
-      <div className="absolute inset-y-[108px] bottom-[78px] right-0 w-full lg:w-[47%] p-3 md:p-5 lg:p-8 pointer-events-none">
-        <div className="grid h-full grid-cols-4 grid-rows-4 gap-2 md:gap-3">
-          {[
-            { type: "light", tone: "cream" },
-            { type: "image", position: "8% 8%" },
-            { type: "light", tone: "white" },
-            { type: "image", position: "72% 10%" },
-            { type: "image", position: "30% 28%" },
-            { type: "light", tone: "gold" },
-            { type: "image", position: "92% 32%" },
-            { type: "light", tone: "cream" },
-            { type: "light", tone: "white" },
-            { type: "image", position: "52% 54%" },
-            { type: "image", position: "18% 64%" },
-            { type: "light", tone: "cream" },
-            { type: "image", position: "78% 72%" },
-            { type: "light", tone: "white" },
-            { type: "image", position: "42% 90%" },
-            { type: "light", tone: "gold" },
-          ].map((tile, i) => (
-            <div
-              key={i}
-              className={`relative overflow-hidden rounded-[2px] border ${
-                tile.type === "light"
-                  ? tile.tone === "gold"
-                    ? "bg-[#D4AF37] border-[#D4AF37]"
-                    : tile.tone === "white"
-                      ? "bg-white border-white"
-                      : "bg-[#E8E5DC] border-[#E8E5DC]"
-                  : "bg-cover bg-no-repeat border-white"
-              }`}
-              style={
-                tile.type === "image"
-                  ? {
-                      backgroundImage: `linear-gradient(rgba(15,23,41,0.04), rgba(15,23,41,0.04)), url(${heroImage})`,
-                      backgroundPosition: tile.position,
-                      backgroundSize: "280% 280%",
-                    }
-                  : undefined
-              }
-            >
-              {tile.type === "light" && tile.tone === "gold" && (
-                <span className="absolute inset-2 border border-[#0F1729]/20" />
-              )}
-            </div>
-          ))}
+      {/* Mosaïque superposée : l'image téléversée alterne avec des formes
+          claires pour créer une composition plus lumineuse et plus éditoriale. */}
+      <div className="absolute inset-y-[108px] bottom-[78px] right-0 w-full lg:w-[51%] pointer-events-none">
+        <div className="relative h-full overflow-hidden bg-[#E8E5DC]">
+          {/* grands carreaux-image */}
+          <div
+            className="absolute left-[3%] top-[5%] h-[24%] w-[38%] border-[6px] border-[#F7F6F2] bg-cover bg-no-repeat shadow-lg"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.16), rgba(255,255,255,0.16)), url(${heroImage})`,
+              backgroundPosition: "right 22%",
+              backgroundSize: "190% 190%",
+            }}
+          />
+          <div
+            className="absolute right-[4%] top-[1%] h-[33%] w-[32%] border-[6px] border-[#F7F6F2] bg-cover bg-no-repeat shadow-lg"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.12), rgba(255,255,255,0.12)), url(${heroImage})`,
+              backgroundPosition: "right 32%",
+              backgroundSize: "185% 185%",
+            }}
+          />
+          <div
+            className="absolute left-[22%] top-[34%] h-[29%] w-[43%] border-[6px] border-[#F7F6F2] bg-cover bg-no-repeat shadow-lg"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.2), rgba(255,255,255,0.2)), url(${heroImage})`,
+              backgroundPosition: "right 58%",
+              backgroundSize: "200% 200%",
+            }}
+          />
+          <div
+            className="absolute right-[1%] bottom-[4%] h-[31%] w-[38%] border-[6px] border-[#F7F6F2] bg-cover bg-no-repeat shadow-lg"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.14), rgba(255,255,255,0.14)), url(${heroImage})`,
+              backgroundPosition: "right 78%",
+              backgroundSize: "190% 190%",
+            }}
+          />
+
+          {/* carreaux clairs */}
+          <div className="absolute left-[44%] top-[4%] h-[18%] w-[17%] bg-white shadow-md" />
+          <div className="absolute left-[4%] top-[38%] h-[22%] w-[19%] bg-[#F7F6F2] shadow-md" />
+          <div className="absolute right-[38%] bottom-[5%] h-[22%] w-[19%] bg-white shadow-md" />
+          <div className="absolute left-[3%] bottom-[2%] h-[15%] w-[28%] bg-[#D4AF37] shadow-md">
+            <span className="absolute inset-3 border border-[#0F1729]/25" />
+          </div>
+
+          {/* losange doré */}
+          <div className="absolute left-[71%] top-[38%] h-24 w-24 rotate-45 bg-[#D4AF37] shadow-xl">
+            <div className="absolute inset-3 border border-[#0F1729]/25" />
+          </div>
+
+          {/* ellipse claire, comme une fenêtre sur l'image */}
+          <div
+            className="absolute left-[8%] bottom-[22%] h-28 w-48 -rotate-[12deg] rounded-[50%] border-[7px] border-[#F7F6F2] bg-cover bg-no-repeat shadow-xl"
+            style={{
+              backgroundImage: `linear-gradient(rgba(255,255,255,0.18), rgba(255,255,255,0.18)), url(${heroImage})`,
+              backgroundPosition: "right 72%",
+              backgroundSize: "200% 200%",
+            }}
+          />
+
+          {/* cercle crème */}
+          <div className="absolute right-[5%] bottom-[38%] h-20 w-20 rounded-full border-[7px] border-[#F7F6F2] bg-[#E8E5DC] shadow-xl" />
         </div>
       </div>
 
