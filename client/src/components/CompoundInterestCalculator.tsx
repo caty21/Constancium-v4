@@ -262,12 +262,13 @@ export default function CompoundInterestCalculator() {
         balance        += effectiveVp;
         totalDeposited += effectiveVp;
       }
-      // Interest compounding
-      if (m % interestFreqMonths === 0) {
+      // La première année sert de période de référence :
+      // aucun VP ni intérêt n'est pris en compte avant l'an 2.
+      if (m > 12 && m % interestFreqMonths === 0) {
         balance *= (1 + ratePerPeriod);
       }
       // Rachat (withdrawal)
-      if (rachatEnabled && rachatAmount > 0 && m % rachatFreqMonths === 0) {
+      if (rachatEnabled && rachatAmount > 0 && m > 12 && m % rachatFreqMonths === 0) {
         const withdraw = Math.min(balance, rachatAmount);
         balance        -= withdraw;
         totalWithdrawn += withdraw;
@@ -291,7 +292,7 @@ export default function CompoundInterestCalculator() {
     };
 
     return { yearlyData, last };
-  }, [initialCapital, vpAmount, vpFreqPerYear, years, interestRate, interestFreqMonths, rachatEnabled, rachatAmount, rachatFreqMonths]);
+  }, [initialCapital, vpAmount, vpFreqPerYear, years, interestRate, interestFreqMonths, vpEnabled, rachatEnabled, rachatAmount, rachatFreqMonths]);
 
   const { yearlyData, last } = results;
   const multiplier = last.deposits > 0 ? last.total / last.deposits : 1;

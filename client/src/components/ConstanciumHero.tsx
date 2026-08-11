@@ -22,9 +22,40 @@ export default function ConstanciumHero() {
         className="absolute inset-0 bg-cover bg-center scale-105"
         style={{ backgroundImage: `url(${heroImage})` }}
       />
-      {/* Gradient overlay */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/95 via-[#0F1729]/80 to-[#0F1729]/30" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-transparent to-[#0F1729]/60" />
+      {/* Overlays plus légers : l'image et ses nuances restent visibles */}
+      <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/78 via-[#0F1729]/52 to-[#0F1729]/18" />
+      <div className="absolute inset-0 bg-gradient-to-b from-[#0F1729]/15 via-transparent to-[#0F1729]/40" />
+
+      {/* Trame architecturale claire pour alléger le hero sans le surcharger */}
+      <div
+        className="absolute inset-0 opacity-[0.12] pointer-events-none"
+        style={{
+          backgroundImage: `
+            linear-gradient(to right, rgba(255,255,255,0.7) 1px, transparent 1px),
+            linear-gradient(to bottom, rgba(255,255,255,0.7) 1px, transparent 1px)
+          `,
+          backgroundSize: "clamp(72px, 9vw, 128px) clamp(72px, 9vw, 128px)",
+          maskImage: "linear-gradient(to right, transparent 0%, black 45%, black 100%)",
+          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 45%, black 100%)",
+        }}
+      />
+
+      {/* Cadre lumineux à droite : un repère visuel qui équilibre le bloc de texte */}
+      <div className="absolute right-[7%] top-[27%] hidden lg:block w-[32%] h-[43%] border border-white/20 bg-white/[0.035] backdrop-blur-[1px]">
+        <div className="absolute -left-px top-10 bottom-10 w-px bg-[#D4AF37]/80" />
+        <div className="absolute inset-5 border border-[#F7F6F2]/20" />
+        <div className="absolute right-7 top-7 text-right">
+          <p className="text-[#F7F6F2]/75 text-[10px] tracking-[0.28em] uppercase">Constancium</p>
+          <p className="mt-2 font-serif italic text-[#F7F6F2]/60 text-lg">Une vision globale</p>
+        </div>
+        <div className="absolute bottom-7 left-8 right-8 flex items-end justify-between">
+          <div>
+            <p className="text-[#D4AF37] text-3xl font-serif font-bold">360°</p>
+            <p className="text-white/55 text-[10px] tracking-widest uppercase mt-1">du patrimoine</p>
+          </div>
+          <div className="w-20 h-px bg-white/30 mb-2" />
+        </div>
+      </div>
 
       {/* Content */}
       <div className="relative z-10 flex-1 flex items-center">
