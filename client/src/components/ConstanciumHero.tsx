@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowRight, ArrowDown } from "lucide-react";
-import heroImage from "@assets/image_1786469758619.png";
+import heroImage from "@assets/generated_images/luxury_city_skyline_hero.webp";
 
 export default function ConstanciumHero() {
   const [visible, setVisible] = useState(false);
@@ -25,14 +25,10 @@ export default function ConstanciumHero() {
             className="absolute inset-0 bg-cover bg-no-repeat"
             style={{
               backgroundImage: `url(${heroImage})`,
-              // L'image importée est une capture complète du site :
-              // on zoome sur la skyline pour exclure sa navigation et ses textes.
-              // Échelle proportionnelle : un seul axe est défini afin de
-              // recadrer la capture sans jamais étirer la photo.
-              backgroundPosition: "right 70%",
-              backgroundSize: "auto 170%",
+              backgroundPosition: "center",
+              backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
-              filter: "brightness(1.28) saturate(1.08)",
+              filter: "brightness(1.08) saturate(1.04)",
             }}
           />
           {/* Voile bleu nuit repris du traitement de la capture d'origine :
