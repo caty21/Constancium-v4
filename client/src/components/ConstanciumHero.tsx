@@ -27,7 +27,7 @@ export default function ConstanciumHero() {
               backgroundImage: `url(${heroImage})`,
               // Décalage de 20 px vers la gauche : le bord de l'image
               // disparaît sans modifier les proportions de la photo.
-              backgroundPosition: "calc(50% - 20px) center",
+              backgroundPosition: "calc(50% - 45px) center",
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
               filter: "brightness(1.04) grayscale(0.38) sepia(0.2) saturate(0.68) contrast(1.04)",
@@ -47,7 +47,6 @@ export default function ConstanciumHero() {
               background: "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 42%, rgba(0,0,0,0.34) 100%)",
             }}
           />
-          <div className="absolute left-8 top-8 h-16 w-px bg-[#D4AF37]" />
           <div className="absolute left-12 top-8 text-[#F7F6F2]">
             <p className="text-[10px] tracking-[0.28em] uppercase opacity-75">Constancium</p>
             <p className="mt-2 font-serif text-xl italic opacity-90">Une vision globale</p>
