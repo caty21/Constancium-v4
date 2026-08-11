@@ -30,3 +30,10 @@ description: Design decisions for the PCA Patrimoine-inspired editorial redesign
 ## Header height reference
 Total fixed header ≈ 109px: 36px top info bar + 70px main nav + ~3px border.
 Use `pt-[109px]` on hero sections of interior pages (not Home, which has its own full-height hero).
+
+## Uploaded hero image
+The uploaded hero asset is a full-page screenshot, not a standalone skyline photo. When reused as a background, preserve its aspect ratio with one-axis sizing and crop to the skyline; never set independent width and height percentages.
+
+**Why:** Independent background dimensions visibly stretch the buildings and make the hero look artificial.
+
+**How to apply:** Use proportional scaling plus `background-position` to isolate the skyline, and apply the original navy veil only on the photo area.

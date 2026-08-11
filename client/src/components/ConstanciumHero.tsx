@@ -27,8 +27,11 @@ export default function ConstanciumHero() {
               backgroundImage: `url(${heroImage})`,
               // L'image importée est une capture complète du site :
               // on zoome sur la skyline pour exclure sa navigation et ses textes.
-              backgroundPosition: "right 62%",
-              backgroundSize: "190% 250%",
+              // Échelle proportionnelle : un seul axe est défini afin de
+              // recadrer la capture sans jamais étirer la photo.
+              backgroundPosition: "right 70%",
+              backgroundSize: "auto 170%",
+              backgroundRepeat: "no-repeat",
               filter: "brightness(1.28) saturate(1.08)",
             }}
           />
