@@ -25,26 +25,20 @@ export default function ConstanciumHero() {
             className="absolute inset-0 bg-cover bg-no-repeat"
             style={{
               backgroundImage: `url(${heroImage})`,
-              // Décalage de 20 px vers la gauche : le bord de l'image
+              // Recadrage horizontal pour retirer le bord d'immeuble
               // disparaît sans modifier les proportions de la photo.
               backgroundPosition: "calc(50% - 45px) center",
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
-              filter: "brightness(1.04) grayscale(0.38) sepia(0.2) saturate(0.68) contrast(1.04)",
+              filter: "brightness(1.02) saturate(0.94) contrast(1.01)",
             }}
           />
-          {/* Dégradé neutre : blanc → gris → beige → noir.
-              Il harmonise la photo avec la palette éditoriale du site. */}
+          {/* Traitement léger : la photo reste naturelle, avec seulement
+              une légère chaleur à gauche et une profondeur discrète à droite. */}
           <div
             className="absolute inset-0"
             style={{
-              background: "linear-gradient(90deg, rgba(255,255,255,0.72) 0%, rgba(198,198,194,0.48) 32%, rgba(218,204,177,0.46) 64%, rgba(18,18,18,0.76) 100%)",
-            }}
-          />
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 42%, rgba(0,0,0,0.34) 100%)",
+              background: "linear-gradient(90deg, rgba(247,246,242,0.16) 0%, rgba(247,246,242,0.02) 42%, rgba(15,23,41,0.16) 100%)",
             }}
           />
           <div className="absolute left-12 top-8 text-[#F7F6F2]">
