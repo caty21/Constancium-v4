@@ -16,51 +16,65 @@ export default function ConstanciumHero() {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden bg-[#0F1729]">
-      {/* Background photo */}
-      <div
-        className="absolute inset-0 bg-cover bg-center scale-105"
-        style={{ backgroundImage: `url(${heroImage})` }}
-      />
-      {/* Overlays plus légers : l'image et ses nuances restent visibles */}
-      <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/78 via-[#0F1729]/52 to-[#0F1729]/18" />
-      <div className="absolute inset-0 bg-gradient-to-b from-[#0F1729]/15 via-transparent to-[#0F1729]/40" />
+    <section className="relative min-h-screen flex flex-col overflow-hidden bg-[#F7F6F2]">
+      {/* Panneau de lecture : le texte garde son contraste sans assombrir toute la page */}
+      <div className="absolute inset-y-0 left-0 w-full lg:w-[53%] bg-[#0F1729]" />
 
-      {/* Trame architecturale claire pour alléger le hero sans le surcharger */}
-      <div
-        className="absolute inset-0 opacity-[0.12] pointer-events-none"
-        style={{
-          backgroundImage: `
-            linear-gradient(to right, rgba(255,255,255,0.7) 1px, transparent 1px),
-            linear-gradient(to bottom, rgba(255,255,255,0.7) 1px, transparent 1px)
-          `,
-          backgroundSize: "clamp(72px, 9vw, 128px) clamp(72px, 9vw, 128px)",
-          maskImage: "linear-gradient(to right, transparent 0%, black 45%, black 100%)",
-          WebkitMaskImage: "linear-gradient(to right, transparent 0%, black 45%, black 100%)",
-        }}
-      />
-
-      {/* Cadre lumineux à droite : un repère visuel qui équilibre le bloc de texte */}
-      <div className="absolute right-[7%] top-[27%] hidden lg:block w-[32%] h-[43%] border border-white/20 bg-white/[0.035] backdrop-blur-[1px]">
-        <div className="absolute -left-px top-10 bottom-10 w-px bg-[#D4AF37]/80" />
-        <div className="absolute inset-5 border border-[#F7F6F2]/20" />
-        <div className="absolute right-7 top-7 text-right">
-          <p className="text-[#F7F6F2]/75 text-[10px] tracking-[0.28em] uppercase">Constancium</p>
-          <p className="mt-2 font-serif italic text-[#F7F6F2]/60 text-lg">Une vision globale</p>
-        </div>
-        <div className="absolute bottom-7 left-8 right-8 flex items-end justify-between">
-          <div>
-            <p className="text-[#D4AF37] text-3xl font-serif font-bold">360°</p>
-            <p className="text-white/55 text-[10px] tracking-widest uppercase mt-1">du patrimoine</p>
-          </div>
-          <div className="w-20 h-px bg-white/30 mb-2" />
+      {/* Mosaïque éditoriale : chaque carreau contient soit une respiration claire,
+          soit un fragment cadré de la ville. */}
+      <div className="absolute inset-y-[108px] bottom-[78px] right-0 w-full lg:w-[47%] p-3 md:p-5 lg:p-8 pointer-events-none">
+        <div className="grid h-full grid-cols-4 grid-rows-4 gap-2 md:gap-3">
+          {[
+            { type: "light", tone: "cream" },
+            { type: "image", position: "8% 8%" },
+            { type: "light", tone: "white" },
+            { type: "image", position: "72% 10%" },
+            { type: "image", position: "30% 28%" },
+            { type: "light", tone: "gold" },
+            { type: "image", position: "92% 32%" },
+            { type: "light", tone: "cream" },
+            { type: "light", tone: "white" },
+            { type: "image", position: "52% 54%" },
+            { type: "image", position: "18% 64%" },
+            { type: "light", tone: "cream" },
+            { type: "image", position: "78% 72%" },
+            { type: "light", tone: "white" },
+            { type: "image", position: "42% 90%" },
+            { type: "light", tone: "gold" },
+          ].map((tile, i) => (
+            <div
+              key={i}
+              className={`relative overflow-hidden rounded-[2px] border ${
+                tile.type === "light"
+                  ? tile.tone === "gold"
+                    ? "bg-[#D4AF37] border-[#D4AF37]"
+                    : tile.tone === "white"
+                      ? "bg-white border-white"
+                      : "bg-[#E8E5DC] border-[#E8E5DC]"
+                  : "bg-cover bg-no-repeat border-white"
+              }`}
+              style={
+                tile.type === "image"
+                  ? {
+                      backgroundImage: `linear-gradient(rgba(15,23,41,0.04), rgba(15,23,41,0.04)), url(${heroImage})`,
+                      backgroundPosition: tile.position,
+                      backgroundSize: "280% 280%",
+                    }
+                  : undefined
+              }
+            >
+              {tile.type === "light" && tile.tone === "gold" && (
+                <span className="absolute inset-2 border border-[#0F1729]/20" />
+              )}
+            </div>
+          ))}
         </div>
       </div>
 
       {/* Content */}
       <div className="relative z-10 flex-1 flex items-center">
         <div className="max-w-7xl mx-auto px-6 md:px-8 w-full py-32 md:py-40">
-          <div className="max-w-3xl">
+            <div className="max-w-3xl lg:max-w-[53%]">
             {/* Eyebrow */}
             <div
               className={`flex items-center gap-3 mb-8 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
@@ -113,11 +127,11 @@ export default function ConstanciumHero() {
 
       {/* Stats strip */}
       <div
-        className={`relative z-10 border-t border-white/10 bg-[#0F1729]/80 backdrop-blur-sm transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
+        className={`relative z-10 border-t border-[#D4AF37]/20 bg-[#F7F6F2] transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
         style={{ transitionDelay: "500ms" }}
       >
         <div className="max-w-7xl mx-auto px-6 md:px-8">
-          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-white/10">
+          <div className="grid grid-cols-2 md:grid-cols-4 divide-x divide-[#D4AF37]/20">
             {[
               { number: "100%", label: "Indépendant & fiduciaire" },
               { number: "4", label: "Expertises patrimoniales" },
@@ -126,7 +140,7 @@ export default function ConstanciumHero() {
             ].map((stat, i) => (
               <div key={i} className="px-6 py-5 text-center">
                 <p className="font-serif text-xl md:text-2xl font-bold text-[#D4AF37]">{stat.number}</p>
-                <p className="text-white/50 text-xs mt-0.5 tracking-wide">{stat.label}</p>
+                <p className="text-[#0F1729]/55 text-xs mt-0.5 tracking-wide">{stat.label}</p>
               </div>
             ))}
           </div>
@@ -136,7 +150,7 @@ export default function ConstanciumHero() {
       {/* Scroll indicator */}
       <button
         onClick={scrollToServices}
-        className="absolute bottom-28 right-8 hidden md:flex flex-col items-center gap-2 text-white/30 hover:text-white/60 transition-colors"
+        className="absolute bottom-28 right-8 hidden md:flex flex-col items-center gap-2 text-[#0F1729]/35 hover:text-[#0F1729]/70 transition-colors"
         aria-label="Défiler vers le bas"
       >
         <span className="text-[10px] tracking-widest uppercase rotate-90 mb-2">Défiler</span>
