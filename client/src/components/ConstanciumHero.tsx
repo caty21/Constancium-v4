@@ -25,17 +25,28 @@ export default function ConstanciumHero() {
             className="absolute inset-0 bg-cover bg-no-repeat"
             style={{
               backgroundImage: `url(${heroImage})`,
-              backgroundPosition: "center",
+              // Décalage de 20 px vers la gauche : le bord de l'image
+              // disparaît sans modifier les proportions de la photo.
+              backgroundPosition: "calc(50% - 20px) center",
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
-              filter: "brightness(1.08) saturate(1.04)",
+              filter: "brightness(1.04) grayscale(0.38) sepia(0.2) saturate(0.68) contrast(1.04)",
             }}
           />
-          {/* Voile bleu nuit repris du traitement de la capture d'origine :
-              il donne de la profondeur à la photo sans assombrir le reste du hero. */}
-          <div className="absolute inset-0 bg-[#0F1729]/32" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/48 via-[#0F1729]/24 to-[#0F1729]/38" />
-          <div className="absolute inset-0 bg-gradient-to-b from-[#0F1729]/20 via-transparent to-[#0F1729]/42" />
+          {/* Dégradé neutre : blanc → gris → beige → noir.
+              Il harmonise la photo avec la palette éditoriale du site. */}
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(90deg, rgba(255,255,255,0.72) 0%, rgba(198,198,194,0.48) 32%, rgba(218,204,177,0.46) 64%, rgba(18,18,18,0.76) 100%)",
+            }}
+          />
+          <div
+            className="absolute inset-0"
+            style={{
+              background: "linear-gradient(180deg, rgba(255,255,255,0.14) 0%, transparent 42%, rgba(0,0,0,0.34) 100%)",
+            }}
+          />
           <div className="absolute left-8 top-8 h-16 w-px bg-[#D4AF37]" />
           <div className="absolute left-12 top-8 text-[#F7F6F2]">
             <p className="text-[10px] tracking-[0.28em] uppercase opacity-75">Constancium</p>
