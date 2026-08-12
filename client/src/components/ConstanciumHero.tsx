@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-import { ArrowRight, ArrowDown } from "lucide-react";
+import { ArrowRight } from "lucide-react";
 import heroImage from "@assets/berzin-girl-2172318_1786540811939.jpg";
 
 export default function ConstanciumHero() {
@@ -145,14 +145,6 @@ export default function ConstanciumHero() {
         </div>
       </div>
 
-      {/* Scroll indicator */}
-      <button
-        onClick={scrollToServices}
-        className="absolute bottom-28 right-8 hidden md:flex flex-col items-center gap-2 text-[#0F1729]/35 hover:text-[#0F1729]/70 transition-colors"
-        aria-label="Défiler vers le bas"
-      >
-        <ArrowDown className="h-4 w-4 animate-bounce" />
-      </button>
     </section>
   );
 }
