@@ -249,6 +249,10 @@ export default function CompoundInterestCalculator() {
     const ratePerPeriod = Math.pow(1 + annualRate, interestFreqMonths / 12) - 1;
     const vpIntervalMonths = 12 / vpFreqPerYear;
     const totalMonths = years * 12;
+    // Quand le toggle est désactivé, le montant VP est strictement nul
+    // pour tout le recalcul. La valeur saisie reste conservée pour une
+    // éventuelle réactivation, mais aucun cumul précédent ne persiste.
+    const effectiveVp = vpEnabled ? vpAmount : 0;
 
     let balance        = initialCapital;
     let totalDeposited = initialCapital;
@@ -257,7 +261,6 @@ export default function CompoundInterestCalculator() {
 
     for (let m = 1; m <= totalMonths; m++) {
       // VP deposit (démarre à partir de l'an 2)
-      const effectiveVp = vpEnabled ? vpAmount : 0;
       if (effectiveVp > 0 && m > 12 && m % vpIntervalMonths === 0) {
         balance        += effectiveVp;
         totalDeposited += effectiveVp;
@@ -296,7 +299,8 @@ export default function CompoundInterestCalculator() {
 
   const { yearlyData, last } = results;
   const multiplier = last.deposits > 0 ? last.total / last.deposits : 1;
-  const annualVP   = vpAmount * vpFreqPerYear;
+  const effectiveVpAmount = vpEnabled ? vpAmount : 0;
+  const annualVP   = effectiveVpAmount * vpFreqPerYear;
   const annualWithdrawal = rachatEnabled ? rachatAmount * (12 / rachatFreqMonths) : 0;
 
   /* ─── Download PNG ─── */
@@ -317,8 +321,8 @@ export default function CompoundInterestCalculator() {
 
     const params = [
       ["Capital initial", fmt(initialCapital)],
-      ["VP / occurrence", fmt(vpAmount)],
-      ["Fréquence VP", VP_FREQS.find(f => f.value === vpFreqPerYear)?.label ?? ""],
+      ["VP / occurrence", vpEnabled ? fmt(vpAmount) : "Désactivé"],
+      ["Fréquence VP", vpEnabled ? (VP_FREQS.find(f => f.value === vpFreqPerYear)?.label ?? "") : "—"],
       ["Durée", `${years} ans`],
       ["Taux annuel", `${interestRate} %`],
       ["Capitalisation", frequencyLabel(interestFreqMonths)],

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowRight, ArrowDown } from "lucide-react";
-import heroImage from "@assets/generated_images/luxury_city_skyline_hero.webp";
+import heroImage from "@assets/berzin-girl-2172318_1786540811939.jpg";
 
 export default function ConstanciumHero() {
   const [visible, setVisible] = useState(false);
@@ -16,7 +16,16 @@ export default function ConstanciumHero() {
   };
 
   return (
-    <section className="relative min-h-screen flex flex-col overflow-hidden bg-[#F7F6F2]">
+    <section className="relative min-h-screen flex flex-col overflow-hidden bg-[#E8E5DC]">
+      {/* Panneau clair animé avec le contenu : il arrive depuis la gauche
+          comme une feuille éditoriale qui se pose sur le hero. */}
+      <div
+        className={`absolute inset-y-[108px] bottom-[78px] left-0 w-full bg-[#F7F6F2] shadow-[18px_0_45px_rgba(15,23,41,0.08)] transition-transform duration-1000 ease-[cubic-bezier(0.22,1,0.36,1)] lg:w-[53%] ${
+          visible ? "translate-x-0" : "-translate-x-full"
+        }`}
+        aria-hidden="true"
+      />
+
       {/* Une seule fenêtre photo : la composition reste lisible et respire. */}
       <div className="absolute inset-y-[108px] bottom-[78px] right-0 hidden w-[49%] lg:block">
         <div className="absolute inset-8 border border-[#D4AF37]/35" />
@@ -25,12 +34,10 @@ export default function ConstanciumHero() {
             className="absolute inset-0 bg-cover bg-no-repeat"
             style={{
               backgroundImage: `url(${heroImage})`,
-              // Recadrage horizontal pour retirer le bord d'immeuble
-              // disparaît sans modifier les proportions de la photo.
-              backgroundPosition: "calc(50% - 45px) center",
+              backgroundPosition: "center 42%",
               backgroundSize: "cover",
               backgroundRepeat: "no-repeat",
-              filter: "brightness(1.02) saturate(0.94) contrast(1.01)",
+              filter: "brightness(1.02) saturate(0.96) contrast(1.01)",
             }}
           />
           {/* Traitement léger : la photo reste naturelle, avec seulement
@@ -58,7 +65,11 @@ export default function ConstanciumHero() {
       {/* Content */}
       <div className="relative z-10 flex-1 flex items-center">
         <div className="max-w-7xl mx-auto px-6 md:px-8 w-full py-32 md:py-40">
-          <div className="max-w-2xl lg:w-[51%]">
+          <div
+            className={`max-w-2xl lg:w-[51%] transition-all duration-1000 delay-150 ease-[cubic-bezier(0.22,1,0.36,1)] ${
+              visible ? "translate-x-0 opacity-100" : "-translate-x-16 opacity-0"
+            }`}
+          >
             {/* Eyebrow */}
             <div
               className={`flex items-center gap-3 mb-8 transition-all duration-700 ${visible ? "opacity-100 translate-y-0" : "opacity-0 translate-y-4"}`}
