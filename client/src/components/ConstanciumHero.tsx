@@ -151,7 +151,6 @@ export default function ConstanciumHero() {
         className="absolute bottom-28 right-8 hidden md:flex flex-col items-center gap-2 text-[#0F1729]/35 hover:text-[#0F1729]/70 transition-colors"
         aria-label="Défiler vers le bas"
       >
-        <span className="text-[10px] tracking-widest uppercase rotate-90 mb-2">Défiler</span>
         <ArrowDown className="h-4 w-4 animate-bounce" />
       </button>
     </section>
