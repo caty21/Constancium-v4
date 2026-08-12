@@ -52,9 +52,12 @@ export default function ConstanciumHero() {
             <p className="text-[10px] tracking-[0.28em] uppercase opacity-75">Constancium</p>
             <p className="mt-2 font-serif text-xl italic opacity-90">Une vision globale</p>
           </div>
-          <div className="absolute bottom-8 right-8 text-right">
-            <p className="font-serif text-4xl font-bold text-[#D4AF37]">360°</p>
-            <p className="mt-1 text-[10px] tracking-[0.24em] uppercase text-white/70">du patrimoine</p>
+          {/* Cartouche uni inspiré de la référence : le côté gauche
+              arrondi crée une entrée douce sur la photo. */}
+          <div className="absolute bottom-5 right-0 h-24 w-56 rounded-l-full bg-[#F7F6F2]/95 shadow-[-8px_0_24px_rgba(15,23,41,0.12)]" />
+          <div className="absolute bottom-8 right-7 z-10 text-right">
+            <p className="font-serif text-4xl font-bold leading-none text-[#D4AF37]">360°</p>
+            <p className="mt-2 text-[10px] font-medium tracking-[0.24em] uppercase text-[#0F1729]/65">du patrimoine</p>
           </div>
         </div>
       </div>
