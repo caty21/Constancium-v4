@@ -23,8 +23,8 @@ export default function LitteratureJuridique() {
               </p>
               <ul className="mt-3 space-y-2 pl-4 border-l-2 border-[#D4AF37]/30">
                 <li className="leading-relaxed">— <strong>Intermédiaire en assurance</strong> en qualité de courtier adhérent de l'ANACOFI – association agréée par l'Autorité des Marchés Financiers. Ne peut directement recevoir aucun fonds, effet, ou valeur.</li>
-                <li className="leading-relaxed">— <strong>Mandataire d'intermédiaires en opérations de banque et en services de paiement (MIOBSP)</strong></li>
-                <li className="leading-relaxed">— <strong>Agent lié (ALPSI — Agent Lié Prestataire de Services d'Investissement)</strong></li>
+                <li className="leading-relaxed">— <strong>Mandataire d'intermédiaires en opérations de banque et en services de paiement</strong></li>
+                <li className="leading-relaxed">— <strong>Agent Lié Prestataire de Services d'Investissement</strong></li>
               </ul>
               <p className="leading-relaxed mt-4">
                 <strong>Carte professionnelle Transactions Immobilières :</strong><br />
@@ -46,7 +46,7 @@ export default function LitteratureJuridique() {
             <section>
               <h2 className="font-serif text-3xl font-bold mb-4 text-[#0F1729]">Assurance Constancium</h2>
               <p className="leading-relaxed">
-                <strong>Assurance Responsabilité Civile Professionnelle auprès de AON - Zurich Insurance n° 7400023129</strong>
+                Assurance Responsabilité Civile Professionnelle auprès de AON - <strong>Zurich Insurance n° 7400023129</strong>
               </p>
             </section>
 

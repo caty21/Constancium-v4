@@ -4,7 +4,10 @@ import logoImage from "@assets/Capture_d_écran_2025-10-19_194027-removebg-previ
 
 export default function ConstanciumFooter() {
   return (
-    <footer className="bg-[#0F1729] text-white" data-testid="footer">
+    <footer className="relative bg-[#0B0F1C] text-white" data-testid="footer">
+      {/* Separator — keeps the footer distinct from a preceding dark section */}
+      <div className="h-[3px] w-full bg-gradient-to-r from-transparent via-[#D4AF37] to-transparent" />
+      <div className="absolute top-0 left-0 right-0 h-40 bg-gradient-to-b from-black/50 to-transparent pointer-events-none" />
 
       {/* Main footer grid */}
       <div className="max-w-7xl mx-auto px-6 md:px-8 pt-16 pb-10">
