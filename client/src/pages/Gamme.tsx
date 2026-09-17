@@ -4,7 +4,7 @@ import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
 import { ArrowRight, Lightbulb, Compass, Target, Briefcase, Zap, Layers, ChevronRight } from "lucide-react";
 import { gammeCategories } from "@/constants/gamme";
-import gammeHeroImage from "@assets/istockphoto-1484825671-612x612_1789639089544.jpg";
+import gammeHeroImage from "@assets/istockphoto-1484825671-612x612_(1)_1789647640227.jpg";
 
 export default function Gamme() {
   const [activeCategory, setActiveCategory] = useState(0);
