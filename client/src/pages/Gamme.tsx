@@ -4,6 +4,7 @@ import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
 import { ArrowRight, Lightbulb, Compass, Target, Briefcase, Zap, Layers, ChevronRight } from "lucide-react";
 import { gammeCategories } from "@/constants/gamme";
+import realEstateImage from "@assets/istockphoto-1970364775-612x612_1789638789186.jpg";
 
 export default function Gamme() {
   const [activeCategory, setActiveCategory] = useState(0);
@@ -119,14 +120,32 @@ export default function Gamme() {
             <main className="flex-1 min-w-0">
               {/* Category header */}
               <div className="bg-white rounded-2xl border border-[#E8E5DC] shadow-sm p-7 mb-5">
-                <div className="flex items-center gap-3 mb-3">
-                  {(() => { const CategoryIcon = currentCategory.icon; return <div className="w-10 h-10 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-xl flex items-center justify-center border border-[#D4AF37]/20"><CategoryIcon className="h-5 w-5 text-[#D4AF37]" /></div>; })()}
-                  <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#0F1729]" data-testid="text-category-title">
-                    {currentCategory.title}
-                  </h2>
+                <div className={currentCategory.id === "immobilier" ? "grid md:grid-cols-[minmax(0,1fr)_220px] gap-6 items-center" : ""}>
+                  <div>
+                    <div className="flex items-center gap-3 mb-3">
+                      {(() => { const CategoryIcon = currentCategory.icon; return <div className="w-10 h-10 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-xl flex items-center justify-center border border-[#D4AF37]/20"><CategoryIcon className="h-5 w-5 text-[#D4AF37]" /></div>; })()}
+                      <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#0F1729]" data-testid="text-category-title">
+                        {currentCategory.title}
+                      </h2>
+                    </div>
+                    <div className="w-8 h-px bg-[#D4AF37] mb-3" />
+                    <p className="text-gray-500 leading-relaxed">{currentCategory.description}</p>
+                  </div>
+
+                  {currentCategory.id === "immobilier" && (
+                    <div className="relative">
+                      <div className="absolute -inset-2 border border-[#D4AF37]/20 rounded-2xl translate-x-1 translate-y-1" />
+                      <div className="relative overflow-hidden rounded-xl border border-[#E8E5DC] bg-[#F7F6F2]">
+                        <img
+                          src={realEstateImage}
+                          alt="Maquettes de maisons et plan architectural illustrant l'investissement immobilier"
+                          className="block aspect-square w-full object-cover"
+                        />
+                        <div className="absolute inset-0 bg-gradient-to-tr from-[#0F1729]/10 to-transparent" />
+                      </div>
+                    </div>
+                  )}
                 </div>
-                <div className="w-8 h-px bg-[#D4AF37] mb-3" />
-                <p className="text-gray-500 leading-relaxed">{currentCategory.description}</p>
               </div>
 
               {/* Subcategory tabs */}
