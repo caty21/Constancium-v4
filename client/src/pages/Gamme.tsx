@@ -85,13 +85,13 @@ export default function Gamme() {
               </div>
             </div>
 
-            <div className="relative lg:justify-self-end lg:translate-x-24 w-full max-w-xl">
+            <div className="relative lg:justify-self-end lg:translate-x-24 w-full max-w-2xl">
               <div className="absolute -inset-3 md:-inset-5 border border-[#D4AF37]/20 rounded-[2rem] translate-x-3 translate-y-3" />
               <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#182239] shadow-2xl">
                 <img
                   src={gammeHeroImage}
                   alt="Échange entre conseillers et clients autour de solutions patrimoniales"
-                  className="block aspect-square w-full object-cover object-center opacity-90"
+                  className="block aspect-[3/2] w-full object-cover object-center opacity-90"
                 />
                 <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/25 via-transparent to-[#0F1729]/10" />
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0F1729]/80 via-[#0F1729]/20 to-transparent px-6 pb-5 pt-14">
