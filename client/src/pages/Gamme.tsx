@@ -85,7 +85,7 @@ export default function Gamme() {
               </div>
             </div>
 
-            <div className="relative lg:justify-self-end lg:-translate-x-4 w-full max-w-xl">
+            <div className="relative lg:justify-self-end lg:-translate-x-8 w-full max-w-xl">
               <div className="absolute -inset-3 md:-inset-5 border border-[#D4AF37]/20 rounded-[2rem] translate-x-3 translate-y-3" />
               <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#182239] shadow-2xl">
                 <img
