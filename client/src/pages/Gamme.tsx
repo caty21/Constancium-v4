@@ -4,7 +4,7 @@ import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
 import { ArrowRight, Lightbulb, Compass, Target, Briefcase, Zap, Layers, ChevronRight } from "lucide-react";
 import { gammeCategories } from "@/constants/gamme";
-import realEstateImage from "@assets/istockphoto-1970364775-612x612_1789638789186.jpg";
+import gammeHeroImage from "@assets/istockphoto-1484830139-612x612_1789638923206.jpg";
 
 export default function Gamme() {
   const [activeCategory, setActiveCategory] = useState(0);
@@ -66,17 +66,41 @@ export default function Gamme() {
           backgroundImage: "repeating-linear-gradient(-45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)",
           backgroundSize: "24px 24px"
         }} />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-14 md:py-20">
-          <div className="flex items-center gap-3 mb-4">
-            <div className="h-px w-8 bg-[#D4AF37]" />
-            <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase">Solutions patrimoniales</span>
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-12 md:py-16 lg:py-20">
+          <div className="grid lg:grid-cols-[0.95fr_1.05fr] gap-10 lg:gap-16 items-center">
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-4">
+                <div className="h-px w-8 bg-[#D4AF37]" />
+                <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase">Solutions patrimoniales</span>
+              </div>
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight">
+                Notre <span className="italic text-[#D4AF37]">Gamme</span>
+              </h1>
+              <p className="text-white/60 text-base md:text-lg mt-4 max-w-lg leading-relaxed">
+                Des solutions patrimoniales sélectionnées pour répondre à chaque objectif financier et personnel.
+              </p>
+              <div className="flex items-center gap-3 mt-7 text-white/40 text-xs tracking-[0.16em] uppercase">
+                <div className="h-px w-10 bg-[#D4AF37]/60" />
+                <span>Une vision globale du patrimoine</span>
+              </div>
+            </div>
+
+            <div className="relative lg:justify-self-end w-full max-w-xl">
+              <div className="absolute -inset-3 md:-inset-5 border border-[#D4AF37]/20 rounded-[2rem] translate-x-3 translate-y-3" />
+              <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#182239] shadow-2xl">
+                <img
+                  src={gammeHeroImage}
+                  alt="Échange entre conseillers et clients autour de solutions patrimoniales"
+                  className="block aspect-square w-full object-cover object-center opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/25 via-transparent to-[#0F1729]/10" />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0F1729]/80 via-[#0F1729]/20 to-transparent px-6 pb-5 pt-14">
+                  <p className="font-serif text-lg italic text-white/90">Des solutions, une stratégie</p>
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -left-4 h-14 w-14 border-b border-l border-[#D4AF37]/70" />
+            </div>
           </div>
-          <h1 className="font-serif text-4xl md:text-5xl font-bold text-white leading-tight">
-            Notre <span className="italic text-[#D4AF37]">Gamme</span>
-          </h1>
-          <p className="text-white/50 text-base mt-4 max-w-lg">
-            Des solutions patrimoniales sélectionnées pour répondre à chaque objectif financier et personnel.
-          </p>
         </div>
       </section>
 
@@ -120,32 +144,14 @@ export default function Gamme() {
             <main className="flex-1 min-w-0">
               {/* Category header */}
               <div className="bg-white rounded-2xl border border-[#E8E5DC] shadow-sm p-7 mb-5">
-                <div className={currentCategory.id === "immobilier" ? "grid md:grid-cols-[minmax(0,1fr)_220px] gap-6 items-center" : ""}>
-                  <div>
-                    <div className="flex items-center gap-3 mb-3">
-                      {(() => { const CategoryIcon = currentCategory.icon; return <div className="w-10 h-10 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-xl flex items-center justify-center border border-[#D4AF37]/20"><CategoryIcon className="h-5 w-5 text-[#D4AF37]" /></div>; })()}
-                      <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#0F1729]" data-testid="text-category-title">
-                        {currentCategory.title}
-                      </h2>
-                    </div>
-                    <div className="w-8 h-px bg-[#D4AF37] mb-3" />
-                    <p className="text-gray-500 leading-relaxed">{currentCategory.description}</p>
-                  </div>
-
-                  {currentCategory.id === "immobilier" && (
-                    <div className="relative">
-                      <div className="absolute -inset-2 border border-[#D4AF37]/20 rounded-2xl translate-x-1 translate-y-1" />
-                      <div className="relative overflow-hidden rounded-xl border border-[#E8E5DC] bg-[#F7F6F2]">
-                        <img
-                          src={realEstateImage}
-                          alt="Maquettes de maisons et plan architectural illustrant l'investissement immobilier"
-                          className="block aspect-square w-full object-cover"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-tr from-[#0F1729]/10 to-transparent" />
-                      </div>
-                    </div>
-                  )}
+                <div className="flex items-center gap-3 mb-3">
+                  {(() => { const CategoryIcon = currentCategory.icon; return <div className="w-10 h-10 bg-gradient-to-br from-[#D4AF37]/20 to-[#D4AF37]/5 rounded-xl flex items-center justify-center border border-[#D4AF37]/20"><CategoryIcon className="h-5 w-5 text-[#D4AF37]" /></div>; })()}
+                  <h2 className="font-serif text-3xl md:text-4xl font-bold text-[#0F1729]" data-testid="text-category-title">
+                    {currentCategory.title}
+                  </h2>
                 </div>
+                <div className="w-8 h-px bg-[#D4AF37] mb-3" />
+                <p className="text-gray-500 leading-relaxed">{currentCategory.description}</p>
               </div>
 
               {/* Subcategory tabs */}
