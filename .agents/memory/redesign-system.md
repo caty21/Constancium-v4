@@ -37,3 +37,10 @@ The uploaded hero asset is a full-page screenshot, not a standalone skyline phot
 **Why:** Independent background dimensions visibly stretch the buildings and make the hero look artificial.
 
 **How to apply:** Use proportional scaling plus `background-position` to isolate the skyline, and apply the original navy veil only on the photo area.
+
+## Local image imports
+Images stored in `attached_assets` must be imported through the Vite `@assets` alias before being used in React components; direct `/attached_assets/...` URLs are not served reliably in the preview.
+
+**Why:** The preview serves bundled assets, not the workspace directory as a public folder.
+
+**How to apply:** Use `import image from "@assets/file.jpg"` and pass the imported value to `src`.

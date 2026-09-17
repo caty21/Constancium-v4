@@ -1,6 +1,7 @@
 import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
 import { Stethoscope, Users, Target, HeartHandshake } from "lucide-react";
+import meetingImage from "@assets/u_w24h9b9v3p-meeting-7366206_1786543069235.jpg";
 
 export default function Demarche() {
   const steps = [
@@ -40,18 +41,42 @@ export default function Demarche() {
           backgroundImage: "repeating-linear-gradient(-45deg, #D4AF37 0, #D4AF37 1px, transparent 0, transparent 50%)",
           backgroundSize: "24px 24px"
         }} />
-        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-16 md:py-24">
-          <div className="flex items-center gap-3 mb-5">
-            <div className="h-px w-8 bg-[#D4AF37]" />
-            <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase">Notre Philosophie</span>
+        <div className="relative max-w-7xl mx-auto px-6 md:px-8 py-14 md:py-20 lg:py-24">
+          <div className="grid lg:grid-cols-[0.92fr_1.08fr] gap-12 lg:gap-16 items-center">
+            <div className="relative z-10">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="h-px w-8 bg-[#D4AF37]" />
+                <span className="text-[#D4AF37] text-xs font-semibold tracking-[0.2em] uppercase">Notre Philosophie</span>
+              </div>
+              <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-2xl" data-testid="text-demarche-headline">
+                La Démarche<br />
+                <span className="italic text-[#D4AF37]">Relationnelle</span>
+              </h1>
+              <p className="text-white/60 text-lg mt-5 max-w-xl leading-relaxed">
+                Une approche centrée sur l'humain pour construire ensemble votre avenir patrimonial
+              </p>
+              <div className="flex items-center gap-3 mt-8 text-white/40 text-xs tracking-[0.16em] uppercase">
+                <div className="h-px w-10 bg-[#D4AF37]/60" />
+                <span>L’écoute au cœur de notre démarche</span>
+              </div>
+            </div>
+
+            <div className="relative lg:justify-self-end w-full max-w-2xl">
+              <div className="absolute -inset-3 md:-inset-5 border border-[#D4AF37]/20 rounded-[2rem] translate-x-3 translate-y-3" />
+              <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#182239] shadow-2xl">
+                <img
+                  src={meetingImage}
+                  alt="Échange entre conseillers et clients autour d'un projet patrimonial"
+                  className="block aspect-[3/2] w-full object-cover object-center opacity-90"
+                />
+                <div className="absolute inset-0 bg-gradient-to-r from-[#0F1729]/25 via-transparent to-[#0F1729]/10" />
+                <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-[#0F1729]/80 via-[#0F1729]/20 to-transparent px-6 pb-5 pt-14">
+                  <p className="font-serif text-lg italic text-white/90">Comprendre avant d’agir</p>
+                </div>
+              </div>
+              <div className="absolute -bottom-4 -left-4 h-14 w-14 border-b border-l border-[#D4AF37]/70" />
+            </div>
           </div>
-          <h1 className="font-serif text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight max-w-2xl" data-testid="text-demarche-headline">
-            La Démarche<br />
-            <span className="italic text-[#D4AF37]">Relationnelle</span>
-          </h1>
-          <p className="text-white/50 text-lg mt-5 max-w-xl">
-            Une approche centrée sur l'humain pour construire ensemble votre avenir patrimonial
-          </p>
         </div>
       </section>
 
