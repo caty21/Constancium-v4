@@ -44,3 +44,10 @@ Images stored in `attached_assets` must be imported through the Vite `@assets` a
 **Why:** The preview serves bundled assets, not the workspace directory as a public folder.
 
 **How to apply:** Use `import image from "@assets/file.jpg"` and pass the imported value to `src`.
+
+## Prioritize a hero image
+In this project’s React DOM/types combination, `fetchPriority` triggers a runtime warning and lowercase `fetchpriority` is rejected as a direct JSX prop. Pass the lowercase HTML attribute in a spread props object alongside `loading: "eager"`.
+
+**Why:** The hero image should be requested immediately, and React should forward the native attribute without warning.
+
+**How to apply:** For an above-the-fold hero image, set eager loading and high fetch priority through an object spread, then verify the browser console.

@@ -1,6 +1,11 @@
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
-import heroImage from "@assets/berzin-girl-2172318_1786540811939.jpg";
+import heroImage from "@assets/berzin-girl-2172318-home-optimized.webp";
+
+const heroImagePriorityProps = {
+  loading: "eager" as const,
+  fetchpriority: "high",
+};
 
 export default function ConstanciumHero() {
   const [visible, setVisible] = useState(false);
@@ -30,16 +35,17 @@ export default function ConstanciumHero() {
       <div className="absolute inset-y-[108px] bottom-[78px] right-0 hidden w-[49%] lg:block">
         <div className="absolute inset-8 border border-[#D4AF37]/35" />
         <div className="absolute inset-0 overflow-hidden bg-[#0F1729] shadow-[-24px_0_60px_rgba(15,23,41,0.12)]">
-          <div
-            className="absolute inset-0 bg-cover bg-no-repeat"
-            style={{
-              backgroundImage: `url(${heroImage})`,
-              backgroundPosition: "center 42%",
-              backgroundSize: "cover",
-              backgroundRepeat: "no-repeat",
-              filter: "brightness(1.02) saturate(0.96) contrast(1.01)",
-            }}
-          />
+          <picture className="absolute inset-0">
+            <source media="(min-width: 1024px)" srcSet={heroImage} />
+            <img
+              {...heroImagePriorityProps}
+              alt=""
+              aria-hidden="true"
+              decoding="async"
+              className="absolute inset-0 h-full w-full object-cover object-[center_42%]"
+              style={{ filter: "brightness(1.02) saturate(0.96) contrast(1.01)" }}
+            />
+          </picture>
           {/* Traitement léger : la photo reste naturelle, avec seulement
               une légère chaleur à gauche et une profondeur discrète à droite. */}
           <div
