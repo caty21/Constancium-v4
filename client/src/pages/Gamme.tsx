@@ -4,7 +4,11 @@ import ConstanciumHeader from "@/components/ConstanciumHeader";
 import ConstanciumFooter from "@/components/ConstanciumFooter";
 import { ArrowRight, Lightbulb, Compass, Target, Briefcase, Zap, Layers, ChevronRight } from "lucide-react";
 import { gammeCategories } from "@/constants/gamme";
-import gammeHeroImage from "@assets/istockphoto-1484825671-612x612_(2)_1789647693527.jpg";
+const gammeHeroImage = "/gamme-hero.webp";
+const gammeHeroImagePriorityProps = {
+  loading: "eager" as const,
+  fetchpriority: "high",
+};
 
 export default function Gamme() {
   const [activeCategory, setActiveCategory] = useState(0);
@@ -89,6 +93,7 @@ export default function Gamme() {
               <div className="absolute -inset-3 md:-inset-5 border border-[#D4AF37]/20 rounded-[2rem] translate-x-3 translate-y-3" />
               <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-[#182239] shadow-2xl">
                 <img
+                  {...gammeHeroImagePriorityProps}
                   src={gammeHeroImage}
                   alt="Échange entre conseillers et clients autour de solutions patrimoniales"
                   className="block aspect-[3/2] w-full object-cover object-center opacity-90"

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import { ArrowRight } from "lucide-react";
-import heroImage from "@assets/berzin-girl-2172318-home-optimized.webp";
+const heroImage = "/home-hero.webp";
 
 const heroImagePriorityProps = {
   loading: "eager" as const,

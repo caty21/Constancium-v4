@@ -51,3 +51,10 @@ In this project’s React DOM/types combination, `fetchPriority` triggers a runt
 **Why:** The hero image should be requested immediately, and React should forward the native attribute without warning.
 
 **How to apply:** For an above-the-fold hero image, set eager loading and high fetch priority through an object spread, then verify the browser console.
+
+## Preload images for lazy routes
+Home and Gamme are lazy-loaded routes, so their primary images should be preloaded from the initial HTML based on the current path rather than globally.
+
+**Why:** Lazy components delay image discovery; a global preload wastes bandwidth and can compete with the image needed on another route.
+
+**How to apply:** Keep the route-to-asset preload map in the HTML head and gate desktop-only heroes at the same breakpoint where they appear.
